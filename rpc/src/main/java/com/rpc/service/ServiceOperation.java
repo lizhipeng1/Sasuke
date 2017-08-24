@@ -38,41 +38,52 @@ public class ServiceOperation {
 
     @PostConstruct
     public void init(){
-        fixedThreadPool.execute(new ServiceRunable(   ) {
-            public void run() {
-                lock.lock();
-                log.info(" 执行扫描 Provider 服务发布 ");
-                try {
-                    hessianProviderScanner.doProvider();
-                    log.info(" 执行扫描 Invoker  服务订阅服务 ");
-                    hessianInvokerScanner.doInvoke();
-                } catch (Exception e) {
-                   e.printStackTrace();
-                }finally {
-                    invokeCondition.signal();
-                    lock.unlock();
-                }
 
 
-            }
-        });
-        fixedThreadPool.execute(new ServiceRunable() {
-            public void run() {
-                try {
-                    lock.lock();
-                    invokeCondition.await();
-                    log.info(" 执行扫描 Invoker  服务订阅服务 ");
-                    hessianInvokerScanner.doInvoke();
-                } catch (InterruptedException e) {
-                    log.info(e.toString());
-                } catch (Exception e) {
-                    log.info(e.toString());
-                } finally {
-                    lock.unlock();
-                }
+        try {
+            log.info(" 执行扫描 Provider 服务发布 ");
+            hessianProviderScanner.doProvider();
+            log.info(" 执行扫描 Invoker  服务订阅服务 ");
+            hessianInvokerScanner.doInvoke();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
-            }
-        });
+
+//        fixedThreadPool.execute(new ServiceRunable(   ) {
+//            public void run() {
+//                lock.lock();
+//                try {
+//                    log.info(" 执行扫描 Provider 服务发布 ");
+//                    hessianProviderScanner.doProvider();
+//                } catch (Exception e) {
+//                   e.printStackTrace();
+//                }finally {
+//                    invokeCondition.signal();
+//                    lock.unlock();
+//                }
+//
+//
+//            }
+//        });
+//        fixedThreadPool.execute(new ServiceRunable() {
+//            public void run() {
+//                try {
+//                    lock.lock();
+//                    invokeCondition.await();
+//                    log.info(" 执行扫描 Invoker  服务订阅服务 ");
+//                    hessianInvokerScanner.doInvoke();
+//                } catch (InterruptedException e) {
+//                    log.info(e.toString());
+//                } catch (Exception e) {
+//                    log.info(e.toString());
+//                } finally {
+//                    lock.unlock();
+//                }
+//
+//
+//            }
+//        });
     }
 }

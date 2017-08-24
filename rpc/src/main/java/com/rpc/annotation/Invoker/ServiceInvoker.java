@@ -13,7 +13,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Resource
+@Autowired
 @Lazy
 public @interface ServiceInvoker {
     String value() default "dev";

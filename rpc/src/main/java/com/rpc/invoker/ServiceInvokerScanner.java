@@ -23,7 +23,7 @@ public interface ServiceInvokerScanner  {
      * 获取具体的服务
      * 需要做判断验证（待续）
      */
-    void invokeService() throws MalformedURLException;
+    void invokeService() throws Exception;
 
     /**
      * 注册bean到spring 中

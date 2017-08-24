@@ -15,3 +15,7 @@
 2. 目前还是先 先使用redis 做服务信息记录
 3. 同一个项目多个tomcat 部署的时候 如何 记录rpc 服务地址
 4. spring 中的注解和自定义注解的关联
+
+
+
+Hessian 服务 controller 扫描

@@ -3,11 +3,12 @@ package com.rpc.provider.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.rpc.Environment;
-import com.rpc.RedisServiceRpc;
 import com.rpc.annotation.provider.ServiceProvider;
 import com.rpc.provider.HessianProviderScanner;
 import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.service.BeanFactoryPostProcessorService;
+import com.rpc.util.ZKUtil;
+import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -36,12 +37,10 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     private  List<BeanDefinitionInfo> beanDefinitionInfoList;
 
     @Autowired
-    private RedisServiceRpc redisServiceRpc;
-    @Autowired
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
 
-    @Value("${rpc.server.prefix}")
-    private String rpcServerPrefix;
+//    @Value("${rpc.server.prefix}")
+    private String rpcServerPrefix = "http://10.240.251.50:8188/order";
 
 
     @PostConstruct
@@ -81,10 +80,11 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
             beanDefinitionInfo.setServiceClazz(clazz);
             String parentName =clazz.getInterfaces()[0].getSimpleName();
             String beanName = parentName.substring(0,1).toLowerCase()+parentName.substring(1);
-            String url = "/" +parentName;
+            String url = "/" +beanName;
             beanDefinitionInfo.setBeanInterfaceName( beanName );
             beanDefinitionInfo.setRequestUrl(  rpcServerPrefix+url  );
 
+//            beanDefinitionInfo.setHessianUrl( url );
 
             beanDefinitionInfo.setEnvironment( Environment.environment);
             beanDefinitionInfo.setBeanName(tem);
@@ -99,13 +99,20 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(HessianServiceExporter.class);
             builder.addPropertyReference("service", beanDefinitionInfo.getBeanName());
             builder.addPropertyValue("serviceInterface", beanDefinitionInfo.getInterfaceClazz());
-            ((BeanDefinitionRegistry) beanFactoryPostProcessorService.configurableListableBeanFactory).registerBeanDefinition(beanDefinitionInfo.getRequestUrl(), builder.getBeanDefinition());
+            ((BeanDefinitionRegistry) beanFactoryPostProcessorService.configurableListableBeanFactory).registerBeanDefinition("/"+beanDefinitionInfo.getBeanInterfaceName(),
+                    builder.getBeanDefinition());
         }
     }
 
     public void registerManager()  throws  Exception{
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
-            redisServiceRpc.set(Environment.environment +"-"+beanDefinitionInfo.getInterfaceClazz().getName() , JSONObject.toJSONString( beanDefinitionInfo ));
+            String nodeName = "/"+Environment.environment +"-"+beanDefinitionInfo.getInterfaceClazz().getName().replace(".","-");
+
+            CuratorFramework client = ZKUtil.getClient();
+            client.create().forPath(nodeName , JSONObject.toJSONBytes(beanDefinitionInfo));
+
+//            ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
+//            redisServiceRpc.set(Environment.environment +"-"+beanDefinitionInfo.getInterfaceClazz().getName() , JSONObject.toJSONString( beanDefinitionInfo ));
         }
 
     }

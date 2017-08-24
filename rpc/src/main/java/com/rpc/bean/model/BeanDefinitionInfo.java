@@ -8,17 +8,27 @@ import java.io.Serializable;
 public class BeanDefinitionInfo implements Serializable {
     private String requestUrl;  //  请求地址
 
+//    private String hessianUrl;  // hessian 服务注册的url /**Service
+
     private String beanInterfaceName;   // 注册的bean name 默认是 接口service 名称首字母小写
 
     private String beanName;   // 注册的bean name 默认是 接口service 名称首字母小写
 
-    private Class interfaceClazz;       // 注册的 接口 的 bean class、
+    private Class interfaceClazz;       // 注册的 接口 的 bean class
 
     private Class serviceClazz;       // 注册的 服务的 bean class
 
     private Object serviceObject; // 服务对应的具体的对象
 
     private String environment; //环境 dev qa pro
+
+//    public String getHessianUrl() {
+//        return hessianUrl;
+//    }
+//
+//    public void setHessianUrl(String hessianUrl) {
+//        this.hessianUrl = hessianUrl;
+//    }
 
     public String getEnvironment() {
         return environment;

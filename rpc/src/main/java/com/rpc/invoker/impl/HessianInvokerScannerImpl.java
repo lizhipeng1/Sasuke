@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rpc.Environment;
-import com.rpc.RedisServiceRpc;
 import com.rpc.annotation.Invoker.ServiceInvoker;
 import com.rpc.annotation.spring.RpcServiceInvoke;
 import com.rpc.invoker.HessianInvokerScanner;
@@ -12,6 +11,8 @@ import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.service.BeanFactoryPostProcessorService;
 import com.rpc.util.HessianUtil;
 import com.rpc.util.ReflectionUtil;
+import com.rpc.util.ZKUtil;
+import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -47,8 +48,6 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
 
     private Map<String , BeanDefinitionInfo> interfaceNameMap;
 
-    @Autowired
-    private RedisServiceRpc redisServiceRpc;
 
     @Value("${rpc.server.prefix}")
     private String rpcServerPrefix;
@@ -101,22 +100,28 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
         return beanDefinitionInfoList;
     }
 
-    public void invokeService() {
+    public void invokeService() throws Exception {
         if(CollectionUtils.isEmpty(beanDefinitionInfoList)){
             log.info(" empty List ");
             return;
         }
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
 
-            String beanDefinitionKey = beanDefinitionInfo.getEnvironment()+"-"+beanDefinitionInfo.getInterfaceClazz().getName();
+            String beanDefinitionKey = "/"+beanDefinitionInfo.getEnvironment()+"-"+beanDefinitionInfo.getInterfaceClazz().getName().replace(".","-");
 
-            String  beanDefinitionStr = (String) redisServiceRpc.get( beanDefinitionKey );
+//            String  beanDefinitionStr = (String) redisServiceRpc.get( beanDefinitionKey );
+
+            CuratorFramework client = ZKUtil.getClient();
+
+            String  beanDefinitionStr  =   JSONObject.parse(client.getData().forPath(beanDefinitionKey)).toString();
+
+//            String  beanDefinitionStr = ZKUtil.getNodeData( beanDefinitionKey );
 
             if(StringUtils.isEmpty(beanDefinitionStr)){
                 log.info("未找到环境："+beanDefinitionInfo.getEnvironment()+" 下的服务 ："+beanDefinitionInfo.getInterfaceClazz().getName());
                 continue;
             }
-            beanDefinitionStr = beanDefinitionStr.substring(1 , beanDefinitionStr.length()-1);
+//            beanDefinitionStr = beanDefinitionStr.substring(1 , beanDefinitionStr.length()-1);
             BeanDefinitionInfo beanDefinitionInfoRpc =  JSONObject.parseObject( beanDefinitionStr, BeanDefinitionInfo.class);
             if(beanDefinitionInfoRpc == null){
                 log.info("未找到环境："+beanDefinitionInfo.getEnvironment()+" 下的服务 ："+beanDefinitionInfo.getInterfaceClazz().getName());
@@ -125,7 +130,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
             BeanUtils.copyProperties( beanDefinitionInfoRpc , beanDefinitionInfo );
 
             //判断 在容器中是不是已经存在
-            if(  this.applicationContext.getBean( beanDefinitionInfo.getServiceClazz() ) != null  ){
+            if( beanDefinitionInfo.getServiceClazz()!=null &&  this.applicationContext.getBean( beanDefinitionInfo.getServiceClazz() ) != null  ){
                 log.info("当前容器中已经存在 " + beanDefinitionInfo.getServiceClazz().getName()  + "RpcServiceInvoke Bean  不在注册 rpc 服务bean");
                 continue;
             }
