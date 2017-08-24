@@ -1,0 +1,46 @@
+package com.redis.pubsub;
+
+import com.redis.operator.ExpireKeyOperate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import redis.clients.jedis.JedisPubSub;
+
+@Component
+public class PubSubListener extends JedisPubSub {
+
+    @Autowired
+    private ExpireKeyOperate expireKeyOperate;
+
+    // 取得订阅的消息后的处理
+    public void onMessage(String channel, String message) {
+    }
+
+    // 初始化订阅时候的处理
+    public void onSubscribe(String channel, int subscribedChannels) {
+    }
+
+    // 取消订阅时候的处理
+    public void onUnsubscribe(String channel, int subscribedChannels) {
+        // System.out.println(channel + "=" + subscribedChannels);
+    }
+
+    // 初始化按表达式的方式订阅时候的处理
+    public void onPSubscribe(String pattern, int subscribedChannels) {
+        // System.out.println(pattern + "=" + subscribedChannels);
+    }
+
+    // 取消按表达式的方式订阅时候的处理
+    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+        // System.out.println(pattern + "=" + subscribedChannels);
+    }
+
+    // 取得按表达式的方式订阅的消息后的处理
+    public void onPMessage(String pattern, String channel, String message) {
+        /**
+         * 这里做判断是不是由当前的 系统进行订阅通知功能
+         */
+
+
+        expireKeyOperate.doTimeOutKeyOperate(pattern ,channel ,message);
+    }
+}
