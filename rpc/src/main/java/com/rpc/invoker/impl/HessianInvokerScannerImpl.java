@@ -50,7 +50,8 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
 
     private Map<String , BeanDefinitionInfo> interfaceNameMap;
 
-
+    @Autowired
+    private Config config;
 
     @PostConstruct
     public void init() {
@@ -107,21 +108,15 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
         }
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
 
-            String beanDefinitionKey = "/"+beanDefinitionInfo.getEnvironment()+"-"+beanDefinitionInfo.getInterfaceClazz().getName().replace(".","-");
+            String nodeName = "/"+config.getProjectName()+"-"+Environment.environment;
+            nodeName+="/"+beanDefinitionInfo.getInterfaceClazz().getSimpleName();
 
-//            String  beanDefinitionStr = (String) redisServiceRpc.get( beanDefinitionKey );
-
-            CuratorFramework client = ZKUtil.getClient();
-
-            String  beanDefinitionStr  =   JSONObject.parse(client.getData().forPath(beanDefinitionKey)).toString();
-
-//            String  beanDefinitionStr = ZKUtil.getNodeData( beanDefinitionKey );
+            String  beanDefinitionStr  =   JSONObject.parse(ZKUtil.getNodeData(nodeName)).toString();
 
             if(StringUtils.isEmpty(beanDefinitionStr)){
                 log.info("未找到环境："+beanDefinitionInfo.getEnvironment()+" 下的服务 ："+beanDefinitionInfo.getInterfaceClazz().getName());
                 continue;
             }
-//            beanDefinitionStr = beanDefinitionStr.substring(1 , beanDefinitionStr.length()-1);
             BeanDefinitionInfo beanDefinitionInfoRpc =  JSONObject.parseObject( beanDefinitionStr, BeanDefinitionInfo.class);
             if(beanDefinitionInfoRpc == null){
                 log.info("未找到环境："+beanDefinitionInfo.getEnvironment()+" 下的服务 ："+beanDefinitionInfo.getInterfaceClazz().getName());

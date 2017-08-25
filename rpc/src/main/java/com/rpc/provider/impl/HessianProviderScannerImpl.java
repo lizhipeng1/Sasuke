@@ -1,20 +1,17 @@
 package com.rpc.provider.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.rpc.Environment;
 import com.rpc.annotation.provider.ServiceProvider;
+import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.config.Config;
 import com.rpc.provider.HessianProviderScanner;
-import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.service.BeanFactoryPostProcessorService;
 import com.rpc.util.ZKUtil;
-import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -48,12 +45,12 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     }
     public void doProvider() throws  Exception {
         scannerBeanInfo();
-        if(!CollectionUtils.isEmpty(beanDefinitionInfoList)) {
-            publishRemote();
-            registerManager();
-        }else {
+        if(CollectionUtils.isEmpty(beanDefinitionInfoList)) {
             log.info("未找到要发布的远程服务 跳过发布");
+            return;
         }
+        publishRemote();
+        registerManager();
     }
 
 
@@ -84,8 +81,6 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
             beanDefinitionInfo.setBeanInterfaceName( beanName );
             beanDefinitionInfo.setRequestUrl(  config.getRpcServerPrefix()+url  );
 
-//            beanDefinitionInfo.setHessianUrl( url );
-
             beanDefinitionInfo.setEnvironment( Environment.environment);
             beanDefinitionInfo.setBeanName(tem);
             beanDefinitionInfos.add(beanDefinitionInfo);
@@ -106,13 +101,9 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
 
     public void registerManager()  throws  Exception{
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
-            String nodeName = "/"+Environment.environment +"-"+beanDefinitionInfo.getInterfaceClazz().getName().replace(".","-");
-
-            CuratorFramework client = ZKUtil.getClient();
-            client.create().forPath(nodeName , JSONObject.toJSONBytes(beanDefinitionInfo));
-
-//            ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
-//            redisServiceRpc.set(Environment.environment +"-"+beanDefinitionInfo.getInterfaceClazz().getName() , JSONObject.toJSONString( beanDefinitionInfo ));
+            String nodeName = "/"+config.getProjectName()+"-"+Environment.environment;
+            nodeName+="/"+beanDefinitionInfo.getInterfaceClazz().getSimpleName();
+            ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
         }
 
     }

@@ -47,8 +47,21 @@ public class ZKUtil {
     }
 
     public static void createNodeWithData(String node  , Object data){
+       String nodes[] =  node.split("/");
+       String createNode="";
+       for(String nodeStr : nodes) {
+           if(nodeStr==null || nodeStr.length()==0){
+               continue;
+           }
+           createNode+="/"+nodeStr;
+           try {
+               client.create().forPath(createNode);
+           } catch (Exception e) {
+               e.printStackTrace();
+           }
+       }
         try {
-            client.create().forPath(node , JSONObject.toJSONString(data).getBytes());
+            client.setData().forPath(createNode, JSONObject.toJSONString(data).getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,7 +69,7 @@ public class ZKUtil {
 
     public static String  getNodeData(String node){
         try {
-           return String.valueOf(client.getData().forPath(node));
+            return JSONObject.toJSONString(JSONObject.parse( client.getData().forPath(node) ) );
         } catch (Exception e) {
             logger.info(e.toString());
             return new String();
@@ -65,7 +78,7 @@ public class ZKUtil {
 
     public  static  <T>  T  getNodeObjectData(String node , T t){
         try {
-            return (T) JSONObject.parseObject(String.valueOf(client.getData().forPath(node)) , t.getClass());
+            return (T) JSONObject.parseObject(getNodeData(node) , t.getClass());
         } catch (Exception e) {
             logger.info(e.toString());
             return null;
@@ -88,13 +101,6 @@ public class ZKUtil {
 
 
     public static void main(String[] args) {
-//        createNodeWithData("/dev-com-netease-corp-it-order-common-service-RemoteOrderService" ,"ss");
-//        System.out.println( getNodeData("/dev-com-netease-corp-it-order-common-service-RemoteOrderService") );
-
-        byte[] bs = JSONObject.toJSONBytes( "this is a test");
-
-        System.out.println( JSONObject.parse( bs ));
-
-
+        createNodeWithData("/order/dev/1/RemoteOrderServiceImpl" ,"ss");
     }
 }
