@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.rpc.Environment;
 import com.rpc.annotation.provider.ServiceProvider;
+import com.rpc.config.Config;
 import com.rpc.provider.HessianProviderScanner;
 import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.service.BeanFactoryPostProcessorService;
@@ -39,9 +40,8 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     @Autowired
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
 
-//    @Value("${rpc.server.prefix}")
-    private String rpcServerPrefix = "http://10.240.251.50:8188/order";
-
+    @Autowired
+    private Config config;
 
     @PostConstruct
     public void init(){
@@ -82,7 +82,7 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
             String beanName = parentName.substring(0,1).toLowerCase()+parentName.substring(1);
             String url = "/" +beanName;
             beanDefinitionInfo.setBeanInterfaceName( beanName );
-            beanDefinitionInfo.setRequestUrl(  rpcServerPrefix+url  );
+            beanDefinitionInfo.setRequestUrl(  config.getRpcServerPrefix()+url  );
 
 //            beanDefinitionInfo.setHessianUrl( url );
 

@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.rpc.Environment;
 import com.rpc.annotation.Invoker.ServiceInvoker;
 import com.rpc.annotation.spring.RpcServiceInvoke;
+import com.rpc.config.Config;
 import com.rpc.invoker.HessianInvokerScanner;
 import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.service.BeanFactoryPostProcessorService;
@@ -40,6 +41,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
     @Autowired
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
 
+
     private ConfigurableListableBeanFactory configurableListableBeanFactory;
 
     private ApplicationContext applicationContext;
@@ -49,8 +51,6 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner,Applicat
     private Map<String , BeanDefinitionInfo> interfaceNameMap;
 
 
-    @Value("${rpc.server.prefix}")
-    private String rpcServerPrefix;
 
     @PostConstruct
     public void init() {
