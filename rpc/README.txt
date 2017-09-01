@@ -29,3 +29,7 @@ Hessian 服务 controller 扫描
 2. Config 类的注入问题
 
 
+动态加载不同类型的 remote 服务 hessian dubbo
+同事 动态加载配置文件信息 比如 hessian 的url
+
+

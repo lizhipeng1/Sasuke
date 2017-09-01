@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +40,6 @@ public class ServiceOperation {
     @PostConstruct
     public void init(){
 
-
         try {
             log.info(" 执行扫描 Provider 服务发布 ");
             hessianProviderScanner.doProvider();
@@ -50,15 +50,14 @@ public class ServiceOperation {
         }
 
 
-
 //        fixedThreadPool.execute(new ServiceRunable(   ) {
 //            public void run() {
 //                lock.lock();
+//                log.info(" 执行扫描 Provider 服务发布 ");
 //                try {
-//                    log.info(" 执行扫描 Provider 服务发布 ");
 //                    hessianProviderScanner.doProvider();
 //                } catch (Exception e) {
-//                   e.printStackTrace();
+//                    e.printStackTrace();
 //                }finally {
 //                    invokeCondition.signal();
 //                    lock.unlock();
