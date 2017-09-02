@@ -1,18 +1,33 @@
 package com.rpc.service;
 
+import com.rpc.invoker.impl.HessianInvokerScannerImpl;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.stereotype.Component;
 
-public class BeanPostProcessorService implements BeanPostProcessor {
+@Component
+public class BeanPostProcessorService implements BeanPostProcessor{
+
+    @Autowired
+    private  BeanFactoryPostProcessorService beanFactoryPostProcessorService;
+    @Autowired
+    HessianInvokerScannerImpl hessianInvokerScanner;
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return null;
+
+        hessianInvokerScanner.doRegister( beanName );
+        BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
+
+        Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
+        return bean;
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        return null;
+        BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
+        Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
+        return bean;
     }
+
 }

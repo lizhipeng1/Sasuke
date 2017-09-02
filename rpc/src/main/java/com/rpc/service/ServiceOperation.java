@@ -43,8 +43,8 @@ public class ServiceOperation {
         try {
             log.info(" 执行扫描 Provider 服务发布 ");
             hessianProviderScanner.doProvider();
-            log.info(" 执行扫描 Invoker  服务订阅服务 ");
-            hessianInvokerScanner.doInvoke();
+//            log.info(" 执行扫描 Invoker  服务订阅服务 ");
+//            hessianInvokerScanner.doInvoke();
         } catch (Exception e) {
             e.printStackTrace();
         }

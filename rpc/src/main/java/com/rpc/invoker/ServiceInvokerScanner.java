@@ -29,7 +29,7 @@ public interface ServiceInvokerScanner  {
      * 注册bean到spring 中
      * @return
      */
-    List<String> registerSpring();
+    void registerSpring();
 
     /**
      *
