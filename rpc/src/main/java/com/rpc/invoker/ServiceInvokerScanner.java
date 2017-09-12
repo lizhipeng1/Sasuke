@@ -34,5 +34,5 @@ public interface ServiceInvokerScanner  {
     /**
      *
      */
-    void doInvoke() throws Exception;
+    void doInvoke();
 }

@@ -1,5 +1,6 @@
 package com.rpc.service;
 
+import com.rpc.invoker.HessianInvokerScanner;
 import com.rpc.invoker.impl.HessianInvokerScannerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
     public DefaultListableBeanFactory defaultListableBeanFactory;
     public BeanDefinitionRegistry registry;
 
+    private HessianInvokerScanner hessianInvokerScanner;
+
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         this.configurableListableBeanFactory = configurableListableBeanFactory;
         //将applicationContext转换为ConfigurableApplicationContext
@@ -28,6 +31,9 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
         // 获取bean工厂并转换为DefaultListableBeanFactory
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
+        hessianInvokerScanner = applicationContext.getBean(HessianInvokerScannerImpl.class);
+
+        hessianInvokerScanner.doInvoke();
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
