@@ -25,9 +25,12 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -65,11 +68,11 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         }
     }
 
-    public void doRegister(String name){
-        if(!CollectionUtils.isEmpty(interfaceNameMap)){
-            registerSpring(name);
-        }
-    }
+//    public void doRegister(String name){
+//        if(!CollectionUtils.isEmpty(interfaceNameMap)){
+//            registerSpring(name);
+//        }
+//    }
 
 
     public List<BeanDefinitionInfo> getBeanDefinition() throws Exception {
@@ -208,16 +211,18 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
             if(propBeanNames!=null && propBeanNames.size()>0){
                 for(String propBeanName : propBeanNames){
                     BeanDefinitionInfo beanDefinitionInfo = interfaceNameMap.get(propBeanName);
-////
-//                    String propNameFinal = propBeanName.substring(0,1).toLowerCase()+propBeanName.substring(1,propBeanName.length());
-////
-//                    BeanDefinition rpcBeanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(rpcBeanClassName);
-////
-//                    MutablePropertyValues pv =  rpcBeanDefinition.getPropertyValues();
-////                    if(pv.contains(propBeanName)){
-//                    pv.addPropertyValue(propNameFinal , beanDefinitionInfo.getServiceObject());
-////                    }
-//
+
+                    String propNameFinal = propBeanName.substring(0,1).toLowerCase()+propBeanName.substring(1,propBeanName.length());
+
+
+                    DefaultListableBeanFactory defaultListableBeanFactory = beanFactoryPostProcessorService.defaultListableBeanFactory;
+                    ScannedGenericBeanDefinition rpcBeanDefinition = (ScannedGenericBeanDefinition) defaultListableBeanFactory.getBeanDefinition(rpcBeanClassName);
+
+                    MutablePropertyValues pv =  rpcBeanDefinition.getPropertyValues();
+//                    if(pv.contains(propBeanName)){
+                        pv.addPropertyValue(propNameFinal , beanDefinitionInfo.getServiceObject());
+//                    }
+                    defaultListableBeanFactory.registerBeanDefinition(rpcBeanClassName, rpcBeanDefinition);
 //                    beanFactoryPostProcessorService.registry.registerBeanDefinition(rpcBeanClassName, rpcBeanDefinition);
 //                    beanFactoryPostProcessorService.defaultListableBeanFactory.registerBeanDefinition( rpcBeanClassName , rpcBeanDefinition);
 //                    Object rpcValueObject = this.applicationContext.getBean(rpcBeanName);
@@ -234,36 +239,6 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
             }
         }
     }
-
-    public Object registerSpring(String name) {
-        Object rpcValueObject = null;
-        if(!StringUtils.isEmpty(name)){
-            List<String> propBeanNames = rpcObjectMap.get(name);
-            if(propBeanNames!=null && propBeanNames.size()>0){
-                for(String propBeanName : propBeanNames){
-                    BeanDefinitionInfo beanDefinitionInfo = interfaceNameMap.get(propBeanName);
-                    String propNameFinal = propBeanName.substring(0,1).toLowerCase()+propBeanName.substring(1,propBeanName.length());
-//                    BeanDefinition rpcBeanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(name);
-//                    MutablePropertyValues pv =  rpcBeanDefinition.getPropertyValues();
-//                    pv.addPropertyValue(propNameFinal , beanDefinitionInfo.getServiceObject());
-//
-//                    beanFactoryPostProcessorService.registry.registerBeanDefinition(name, rpcBeanDefinition);
-//                    beanFactoryPostProcessorService.defaultListableBeanFactory.registerBeanDefinition( name , rpcBeanDefinition);
-
-
-                    rpcValueObject = this.applicationContext.getBean(name);
-                    ReflectionUtils.setFieldValue( rpcValueObject ,propNameFinal , beanDefinitionInfo.getServiceObject());
-                    beanFactoryPostProcessorService.defaultListableBeanFactory.destroySingleton( name );
-                    beanFactoryPostProcessorService.configurableListableBeanFactory.registerSingleton(name,rpcValueObject);
-
-//                    beanFactoryPostProcessorService.configurableListableBeanFactory.registerSingleton(propBeanName, beanDefinitionInfo.getServiceObject());
-                    log.info("注册bean" + beanDefinitionInfo.getInterfaceClazz().getName() + " 到 rpcBeanName 中的属性中");
-                }
-            }
-        }
-        return rpcValueObject;
-    }
-
 
     public List<BeanDefinitionInfo> getBeanDefinitionInfoList() {
         return beanDefinitionInfoList;

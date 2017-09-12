@@ -25,10 +25,10 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         this.configurableListableBeanFactory = configurableListableBeanFactory;
-        //将applicationContext转换为ConfigurableApplicationContext
+//        将applicationContext转换为ConfigurableApplicationContext
         ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
 
-        // 获取bean工厂并转换为DefaultListableBeanFactory
+//         获取bean工厂并转换为DefaultListableBeanFactory
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
         hessianInvokerScanner = applicationContext.getBean(HessianInvokerScannerImpl.class);
