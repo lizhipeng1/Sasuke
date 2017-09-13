@@ -1,0 +1,42 @@
+0. 配置zk集群  修改佐助项目的
+    ZKUtil
+    private static final String connectString = "192.168.146.128:4180,192.168.146.128:4181,192.168.146.128:4182";
+    替换IP端口
+
+1. 服务暴露端：
+    添加 web-rpc.xml
+
+    <bean class="com.rpc.config.Config">
+		<constructor-arg index="0" value="http://10.240.251.50:8188/order"/>
+		<constructor-arg index="1" value="order"/>
+		<constructor-arg index="2" value="1"/>
+	</bean>
+
+	<context:component-scan base-package="com.rpc" />   // rpc 项目的根目录
+
+	<context:component-scan base-package="com.netease.corp.it.order.service.remote" />  // hessian 服务暴露的service 所在的包名
+
+    导入到 springMvc.xml 中
+    <import resource="classpath*:conf/web-rpc.xml" />
+
+
+    服务暴露注解：
+    @ServiceProvider
+
+2. 添加 web-rpc.xml
+
+       <bean class="com.rpc.config.Config">
+   		<constructor-arg index="0" value="http://10.240.251.50:8188/order"/>
+   		<constructor-arg index="1" value="order"/>
+   		<constructor-arg index="2" value="1"/>
+   	</bean>
+
+   	<context:component-scan base-package="com.rpc" />   // rpc 项目的根目录
+
+   	导入到 springMvc.xml 中
+        <import resource="classpath*:conf/web-rpc.xml" />
+
+
+    调用方：
+    @ServiceInvokerAutowired
+    private RemoteOrderService remoteOrderService;

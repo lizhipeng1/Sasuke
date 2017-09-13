@@ -11,7 +11,6 @@ import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.config.Config;
 import com.rpc.invoker.HessianInvokerScanner;
 import com.rpc.service.BeanFactoryPostProcessorService;
-import com.rpc.service.BeanPostProcessorService;
 import com.rpc.util.HessianUtil;
 import com.rpc.util.ReflectionUtils;
 import com.rpc.util.ZKUtil;
@@ -23,6 +22,7 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -45,7 +45,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
     private static final Logger log= LoggerFactory.getLogger(HessianInvokerScannerImpl.class);
 
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
-
+    private ConfigurableListableBeanFactory configurableListableBeanFactory;
     private ApplicationContext applicationContext;
 
     private List<BeanDefinitionInfo> beanDefinitionInfoList=null;
@@ -58,6 +58,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
 
     public void doInvoke() {
         this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.configurableListableBeanFactory = beanFactoryPostProcessorService.configurableListableBeanFactory;
         this.config = applicationContext.getBean(Config.class);
         try {
             getBeanDefinition();
@@ -68,45 +69,36 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         }
     }
 
-//    public void doRegister(String name){
-//        if(!CollectionUtils.isEmpty(interfaceNameMap)){
-//            registerSpring(name);
-//        }
-//    }
-
-
     public List<BeanDefinitionInfo> getBeanDefinition() throws Exception {
         beanDefinitionInfoList = Lists.newArrayList();
         interfaceNameMap = Maps.newHashMap();
         // 先获取 所有包含InvokeService 注解的属性
-        String[] beanDefinitionNames = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinitionNames();
+        String[] beanDefinitionNames = configurableListableBeanFactory.getBeanDefinitionNames();
 //        Map<String , Object> beanMaps = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeansWithAnnotation(RpcServiceInvoke.class);
         if(beanDefinitionNames != null && beanDefinitionNames.length>0) {
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
-                if(!applicationContext.containsBean( beanName )){
-                    continue;
-                }
-                Object proxy = applicationContext.getBean( beanName );
-                Object object = ReflectionUtils.getTarget( proxy );
-                Field[] fields =object.getClass().getDeclaredFields();
-                for (Field field : fields) {
-                    log.info(field.getName());
-                    ServiceInvokerResource serviceInvokerResource = field.getAnnotation(ServiceInvokerResource.class);
-                    ServiceInvokerAutowired serviceInvokerAutowired = field.getAnnotation(ServiceInvokerAutowired.class);
-                    BeanDefinitionInfo beanDefinitionInfo = null;
-                    if (serviceInvokerResource != null) {
-                        beanDefinitionInfo = doDealInvokeResource(field, serviceInvokerResource);
-                    }
-                    if (serviceInvokerAutowired != null) {
-                        beanDefinitionInfo = doDealInvokeAutowired(field, serviceInvokerAutowired);
-                    }
-                    if (beanDefinitionInfo != null) {
-                        beanDefinitionInfoList.add(beanDefinitionInfo);
-                        interfaceNameMap.put(field.getType().getSimpleName(), beanDefinitionInfo);
+                Class clazz = applicationContext.getType(beanName);
+                if(clazz != null) {
+                    Field[] fields =clazz.getDeclaredFields();
+                    for (Field field : fields) {
+                        log.info(field.getName());
+                        ServiceInvokerResource serviceInvokerResource = field.getAnnotation(ServiceInvokerResource.class);
+                        ServiceInvokerAutowired serviceInvokerAutowired = field.getAnnotation(ServiceInvokerAutowired.class);
+                        BeanDefinitionInfo beanDefinitionInfo = null;
+                        if (serviceInvokerResource != null) {
+                            beanDefinitionInfo = doDealInvokeResource(field, serviceInvokerResource);
+                        }
+                        if (serviceInvokerAutowired != null) {
+                            beanDefinitionInfo = doDealInvokeAutowired(field, serviceInvokerAutowired);
+                        }
+                        if (beanDefinitionInfo != null) {
+                            beanDefinitionInfoList.add(beanDefinitionInfo);
+                            interfaceNameMap.put(field.getType().getSimpleName(), beanDefinitionInfo);
 
-                        addToRpcObjectMap(beanName , field);
+                            addToRpcObjectMap(beanName, field);
 
+                        }
                     }
                 }
             }

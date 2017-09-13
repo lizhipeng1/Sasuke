@@ -33,3 +33,8 @@ Hessian 服务 controller 扫描
 同事 动态加载配置文件信息 比如 hessian 的url
 
 
+
+///////////////////
+解决项目启动的时候 服务 invoke 时 getObject dao 实例化出错没有找到配置文件
+
+

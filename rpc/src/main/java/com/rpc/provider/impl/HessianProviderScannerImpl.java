@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
@@ -31,16 +32,15 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     private static final Logger log= LoggerFactory.getLogger(HessianProviderScannerImpl.class);
     private ApplicationContext applicationContext;
 
-
     private  List<BeanDefinitionInfo> beanDefinitionInfoList;
-
-    @Autowired
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
-
-    @Autowired
+    private ConfigurableListableBeanFactory configurableListableBeanFactory;
     private Config config;
 
     public void doProvider() throws  Exception {
+        this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.configurableListableBeanFactory = beanFactoryPostProcessorService.configurableListableBeanFactory;
+        this.config = applicationContext.getBean(Config.class);
         scannerBeanInfo();
         if(CollectionUtils.isEmpty(beanDefinitionInfoList)) {
             log.info("未找到要发布的远程服务 跳过发布");
@@ -54,7 +54,7 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     public List<BeanDefinitionInfo> scannerBeanInfo() throws ClassNotFoundException {
 
         List<BeanDefinitionInfo> beanDefinitionInfos = Lists.newArrayList();
-        Map<String , Object> beanMap  = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeansWithAnnotation(ServiceProvider.class);
+        Map<String , Object> beanMap  = applicationContext.getBeansWithAnnotation(ServiceProvider.class);
 
         if(CollectionUtils.isEmpty(beanMap)){
             return Lists.newArrayList();
