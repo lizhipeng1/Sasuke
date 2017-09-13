@@ -52,7 +52,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
 
     private Map<String , BeanDefinitionInfo> interfaceNameMap;
 
-    private Map<String , List<String>> rpcObjectMap = new HashMap<String, List<String>>();
+    public static Map<String , List<String>> rpcObjectMap = new HashMap<String, List<String>>();
 
     private Config config;
 

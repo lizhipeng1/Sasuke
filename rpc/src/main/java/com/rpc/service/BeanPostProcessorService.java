@@ -1,5 +1,6 @@
 package com.rpc.service;
 
+import com.rpc.invoker.impl.HessianInvokerScannerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -13,15 +14,24 @@ public class BeanPostProcessorService implements BeanPostProcessor , Application
     private  BeanFactoryPostProcessorService beanFactoryPostProcessorService;
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
-        Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
-        return object;
+
+        if(HessianInvokerScannerImpl.rpcObjectMap.get( beanName )!=null){
+            BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
+            Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
+            return object;
+        }else {
+            return bean;
+        }
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
-        Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
-        return bean;
+        if(HessianInvokerScannerImpl.rpcObjectMap.get( beanName )!=null){
+            BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
+            Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
+            return object;
+        }else {
+            return bean;
+        }
     }
 
     @Override
