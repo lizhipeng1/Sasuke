@@ -40,9 +40,6 @@ public class HessianProviderScannerImpl implements HessianProviderScanner, Appli
     @Autowired
     private Config config;
 
-    @PostConstruct
-    public void init(){
-    }
     public void doProvider() throws  Exception {
         scannerBeanInfo();
         if(CollectionUtils.isEmpty(beanDefinitionInfoList)) {

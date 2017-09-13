@@ -84,6 +84,9 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         if(beanDefinitionNames != null && beanDefinitionNames.length>0) {
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
+                if(!applicationContext.containsBean( beanName )){
+                    continue;
+                }
                 Object proxy = applicationContext.getBean( beanName );
                 Object object = ReflectionUtils.getTarget( proxy );
                 Field[] fields =object.getClass().getDeclaredFields();

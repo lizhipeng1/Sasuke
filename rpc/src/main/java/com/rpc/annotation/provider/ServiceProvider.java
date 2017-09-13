@@ -12,4 +12,5 @@ import java.lang.annotation.*;
 @Documented
 @Service
 public @interface ServiceProvider {
+    String value() default "";
 }
