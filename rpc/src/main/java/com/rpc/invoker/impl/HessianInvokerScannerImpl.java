@@ -121,19 +121,9 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
      */
     private BeanDefinitionInfo doDealInvokeAutowired(String beanName, Field field, ServiceInvokerAutowired serviceInvokerAutowired) {
         Class propClazz = field.getType();
-        List<String> springBeanProps = null;
-        if (springBeanProp.containsKey(beanName)) {
-            springBeanProps = springBeanProp.get( beanName );
-            if(springBeanProps.contains( field.getName() )){
-                return null;
-            }else {
-                springBeanProps.add( field.getName() );
-            }
-        }else {
-            springBeanProps = new ArrayList<String>();
-            springBeanProps.add( field.getName() );
+        if(!doFillSpringPropsMap( beanName , field )){
+            return null;
         }
-        springBeanProp.put(beanName , springBeanProps);
         BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
         beanDefinitionInfo.setBeanName(field.getName());
         beanDefinitionInfo.setInterfaceClazz(propClazz);
@@ -148,11 +138,23 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
      */
     private BeanDefinitionInfo doDealInvokeResource(String beanName, Field field, ServiceInvokerResource serviceInvokerResource) {
         Class propClazz = field.getType();
+        if(!doFillSpringPropsMap( beanName , field )){
+            return null;
+        }
+        BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
+        beanDefinitionInfo.setBeanName(field.getName());
+        beanDefinitionInfo.setInterfaceClazz(propClazz);
+        beanDefinitionInfo.setFiledName(field.getName());
+        beanDefinitionInfo.setEnvironment(StringUtils.isEmpty(serviceInvokerResource.value()) ? Environment.environment : serviceInvokerResource.value());
+        return beanDefinitionInfo;
+    }
+
+    private boolean doFillSpringPropsMap(String beanName, Field field) {
         List<String> springBeanProps = null;
         if (springBeanProp.containsKey(beanName)) {
             springBeanProps = springBeanProp.get( beanName );
             if(springBeanProps.contains( field.getName() )){
-                return null;
+                return false;
             }else {
                 springBeanProps.add( field.getName() );
             }
@@ -161,12 +163,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
             springBeanProps.add( field.getName() );
         }
         springBeanProp.put(beanName , springBeanProps);
-        BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
-        beanDefinitionInfo.setBeanName(field.getName());
-        beanDefinitionInfo.setInterfaceClazz(propClazz);
-        beanDefinitionInfo.setFiledName(field.getName());
-        beanDefinitionInfo.setEnvironment(StringUtils.isEmpty(serviceInvokerResource.value()) ? Environment.environment : serviceInvokerResource.value());
-        return beanDefinitionInfo;
+        return true;
     }
 
     /**
