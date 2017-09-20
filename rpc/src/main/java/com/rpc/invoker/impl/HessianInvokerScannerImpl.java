@@ -6,30 +6,22 @@ import com.google.common.collect.Maps;
 import com.rpc.Environment;
 import com.rpc.annotation.Invoker.ServiceInvokerAutowired;
 import com.rpc.annotation.Invoker.ServiceInvokerResource;
-import com.rpc.annotation.spring.RpcServiceInvoke;
 import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.config.Config;
 import com.rpc.invoker.HessianInvokerScanner;
 import com.rpc.service.BeanFactoryPostProcessorService;
+import com.rpc.util.BeanUtils;
 import com.rpc.util.HessianUtil;
-import com.rpc.util.ReflectionUtils;
 import com.rpc.util.ZKUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -38,7 +30,6 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class HessianInvokerScannerImpl implements HessianInvokerScanner , ApplicationContextAware{
@@ -50,7 +41,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
 
     private List<BeanDefinitionInfo> beanDefinitionInfoList=null;
 
-    private Map<String , BeanDefinitionInfo> interfaceNameMap;
+    private Map<String , List<String>> springBeanProp = null;
 
     public static Map<String , List<String>> rpcObjectMap = new HashMap<String, List<String>>();
 
@@ -69,12 +60,17 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         }
     }
 
+    /**
+     * 获取 bean 的注册信息 从当前项目的中的服务激活注解中获取
+     * 需要注入的 属性的配置信息
+     * @return
+     * @throws Exception
+     */
     public List<BeanDefinitionInfo> getBeanDefinition() throws Exception {
         beanDefinitionInfoList = Lists.newArrayList();
-        interfaceNameMap = Maps.newHashMap();
+        springBeanProp = Maps.newHashMap();
         // 先获取 所有包含InvokeService 注解的属性
         String[] beanDefinitionNames = configurableListableBeanFactory.getBeanDefinitionNames();
-//        Map<String , Object> beanMaps = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeansWithAnnotation(RpcServiceInvoke.class);
         if(beanDefinitionNames != null && beanDefinitionNames.length>0) {
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
@@ -87,17 +83,14 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
                         ServiceInvokerAutowired serviceInvokerAutowired = field.getAnnotation(ServiceInvokerAutowired.class);
                         BeanDefinitionInfo beanDefinitionInfo = null;
                         if (serviceInvokerResource != null) {
-                            beanDefinitionInfo = doDealInvokeResource(field, serviceInvokerResource);
+                            beanDefinitionInfo = doDealInvokeResource(beanName , field, serviceInvokerResource);
                         }
                         if (serviceInvokerAutowired != null) {
-                            beanDefinitionInfo = doDealInvokeAutowired(field, serviceInvokerAutowired);
+                            beanDefinitionInfo = doDealInvokeAutowired(beanName , field, serviceInvokerAutowired);
                         }
                         if (beanDefinitionInfo != null) {
+                            beanDefinitionInfo.setSpringBeanName( beanName );
                             beanDefinitionInfoList.add(beanDefinitionInfo);
-                            interfaceNameMap.put(field.getType().getSimpleName(), beanDefinitionInfo);
-
-                            addToRpcObjectMap(beanName, field);
-
                         }
                     }
                 }
@@ -106,48 +99,81 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         return beanDefinitionInfoList;
     }
 
-    private void addToRpcObjectMap(String beanName, Field field) {
-        List<String> propNames = null;
-        if(rpcObjectMap.get( beanName )!=null && rpcObjectMap.get( beanName ).size()>0){
-            propNames= rpcObjectMap.get(beanName);
-        }else {
-            propNames = new ArrayList<String>();
-        }
-        propNames.add( field.getType().getSimpleName());
-        rpcObjectMap.put(beanName, propNames);
-    }
+    /**
+     * 暂存  关联
+     * @param beanName
+     * @param field
+     */
+//    private void addToRpcObjectMap(String beanName, Field field) {
+//        List<String> propNames = null;
+//        if(rpcObjectMap.get( beanName )!=null && rpcObjectMap.get( beanName ).size()>0){
+//            propNames= rpcObjectMap.get(beanName);
+//        }else {
+//            propNames = new ArrayList<String>();
+//        }
+//        propNames.add( field.getType().getSimpleName());
+//        rpcObjectMap.put(beanName, propNames);
+//    }
 
-    // 处理 Autowaire 注入
-    private BeanDefinitionInfo doDealInvokeAutowired(Field field, ServiceInvokerAutowired serviceInvokerAutowired) {
+    /**
+     *处理 Autowaire 注入
+     * 装载到map 中
+     */
+    private BeanDefinitionInfo doDealInvokeAutowired(String beanName, Field field, ServiceInvokerAutowired serviceInvokerAutowired) {
         Class propClazz = field.getType();
-        if (interfaceNameMap.containsKey(propClazz.getName())) {
-            BeanDefinitionInfo tempBeanDefinitionInfo = interfaceNameMap.get(propClazz.getName());
-            if (tempBeanDefinitionInfo.getEnvironment().equals(Environment.environment)) {
+        List<String> springBeanProps = null;
+        if (springBeanProp.containsKey(beanName)) {
+            springBeanProps = springBeanProp.get( beanName );
+            if(springBeanProps.contains( field.getName() )){
                 return null;
+            }else {
+                springBeanProps.add( field.getName() );
             }
+        }else {
+            springBeanProps = new ArrayList<String>();
+            springBeanProps.add( field.getName() );
         }
+        springBeanProp.put(beanName , springBeanProps);
         BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
         beanDefinitionInfo.setBeanName(field.getName());
         beanDefinitionInfo.setInterfaceClazz(propClazz);
+        beanDefinitionInfo.setFiledName(field.getName());
         beanDefinitionInfo.setEnvironment(  Environment.environment );
         return beanDefinitionInfo;
     }
-    // 处理 resource 注入
-    private BeanDefinitionInfo doDealInvokeResource(Field field , ServiceInvokerResource serviceInvokerResource) {
+    /**
+     * 处理 resource 注入
+     * 有做 环境版本相关信息的过滤
+     * 装载到map 中
+     */
+    private BeanDefinitionInfo doDealInvokeResource(String beanName, Field field, ServiceInvokerResource serviceInvokerResource) {
         Class propClazz = field.getType();
-        if (interfaceNameMap.containsKey(propClazz.getName())) {
-            BeanDefinitionInfo tempBeanDefinitionInfo = interfaceNameMap.get(propClazz.getName());
-            if (tempBeanDefinitionInfo.getEnvironment().equals(serviceInvokerResource.value())) {
+        List<String> springBeanProps = null;
+        if (springBeanProp.containsKey(beanName)) {
+            springBeanProps = springBeanProp.get( beanName );
+            if(springBeanProps.contains( field.getName() )){
                 return null;
+            }else {
+                springBeanProps.add( field.getName() );
             }
+        }else {
+            springBeanProps = new ArrayList<String>();
+            springBeanProps.add( field.getName() );
         }
+        springBeanProp.put(beanName , springBeanProps);
         BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
         beanDefinitionInfo.setBeanName(field.getName());
         beanDefinitionInfo.setInterfaceClazz(propClazz);
+        beanDefinitionInfo.setFiledName(field.getName());
         beanDefinitionInfo.setEnvironment(StringUtils.isEmpty(serviceInvokerResource.value()) ? Environment.environment : serviceInvokerResource.value());
         return beanDefinitionInfo;
     }
 
+    /**
+     * 激活 对应环境的服务 获取服务的实例
+     * 添加到bean BeanDefinitionInfo 中
+     * @throws Exception
+     */
     public void invokeService() throws Exception {
         if(CollectionUtils.isEmpty(beanDefinitionInfoList)){
             log.info(" empty List ");
@@ -155,11 +181,13 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
         }
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
 
-            String nodeName = "/"+config.getProjectName()+"-"+Environment.environment;
+            String nodeName = "/"+config.getProjectName()+"-"+beanDefinitionInfo.getEnvironment();
             nodeName+="/"+beanDefinitionInfo.getInterfaceClazz().getSimpleName();
 
             String jsonZKStr = ZKUtil.getNodeData(nodeName);
-            if(jsonZKStr==null || jsonZKStr.length()==0){ continue;}
+            if(jsonZKStr==null || jsonZKStr.length()==0){
+                continue;
+            }
             String  beanDefinitionStr  =   JSONObject.parse(jsonZKStr).toString();
 
             if(StringUtils.isEmpty(beanDefinitionStr)){
@@ -171,7 +199,7 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
                 log.info("未找到环境："+beanDefinitionInfo.getEnvironment()+" 下的服务 ："+beanDefinitionInfo.getInterfaceClazz().getName());
                 continue;
             }
-            BeanUtils.copyProperties( beanDefinitionInfoRpc , beanDefinitionInfo );
+            BeanUtils.copyProperties( beanDefinitionInfoRpc , beanDefinitionInfo ,true );
 
             /*
                 判断 在容器中是不是已经存在
@@ -195,44 +223,38 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
 
     }
 
+    /**
+     * 注册到对应 spring bean 的属性中
+     */
     public void registerSpring() {
         if(CollectionUtils.isEmpty(beanDefinitionInfoList)){
             log.info(" empty List ");
             return ;
         }
-        for (Iterator iterator = rpcObjectMap.keySet().iterator() ; iterator.hasNext();){
-            String rpcBeanClassName = (String) iterator.next();
-            List<String> propBeanNames = rpcObjectMap.get(rpcBeanClassName);
-            if(propBeanNames!=null && propBeanNames.size()>0){
-                for(String propBeanName : propBeanNames){
-                    BeanDefinitionInfo beanDefinitionInfo = interfaceNameMap.get(propBeanName);
-
-                    String propNameFinal = propBeanName.substring(0,1).toLowerCase()+propBeanName.substring(1,propBeanName.length());
-
-
-                    DefaultListableBeanFactory defaultListableBeanFactory = beanFactoryPostProcessorService.defaultListableBeanFactory;
-                    ScannedGenericBeanDefinition rpcBeanDefinition = (ScannedGenericBeanDefinition) defaultListableBeanFactory.getBeanDefinition(rpcBeanClassName);
-
-                    MutablePropertyValues pv =  rpcBeanDefinition.getPropertyValues();
-//                    if(pv.contains(propBeanName)){
-                        pv.addPropertyValue(propNameFinal , beanDefinitionInfo.getServiceObject());
-//                    }
-                    defaultListableBeanFactory.registerBeanDefinition(rpcBeanClassName, rpcBeanDefinition);
-//                    beanFactoryPostProcessorService.registry.registerBeanDefinition(rpcBeanClassName, rpcBeanDefinition);
-//                    beanFactoryPostProcessorService.defaultListableBeanFactory.registerBeanDefinition( rpcBeanClassName , rpcBeanDefinition);
-//                    Object rpcValueObject = this.applicationContext.getBean(rpcBeanName);
-//
-//                    ReflectionUtils.setFieldValue( rpcValueObject ,propNameFinal , beanDefinitionInfo.getServiceObject());
-//
-//                    beanFactoryPostProcessorService.defaultListableBeanFactory.removeBeanDefinition( rpcBeanName );
-//
-//                    beanFactoryPostProcessorService.configurableListableBeanFactory.registerSingleton(rpcBeanName,rpcValueObject);
+        for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
+            String propNameFinal = beanDefinitionInfo.getFiledName();
+            String rpcBeanClassName = beanDefinitionInfo.getSpringBeanName();
+            DefaultListableBeanFactory defaultListableBeanFactory = beanFactoryPostProcessorService.defaultListableBeanFactory;
+            ScannedGenericBeanDefinition rpcBeanDefinition = (ScannedGenericBeanDefinition) defaultListableBeanFactory.getBeanDefinition(rpcBeanClassName);
+            MutablePropertyValues pv =  rpcBeanDefinition.getPropertyValues();
+            pv.addPropertyValue(propNameFinal , beanDefinitionInfo.getServiceObject());
+            if(defaultListableBeanFactory.containsBeanDefinition(rpcBeanClassName)) {
+                defaultListableBeanFactory.removeBeanDefinition(rpcBeanClassName);
+            }
+            defaultListableBeanFactory.registerBeanDefinition(rpcBeanClassName, rpcBeanDefinition);
 
 //                    beanFactoryPostProcessorService.configurableListableBeanFactory.registerSingleton(propBeanName, beanDefinitionInfo.getServiceObject());
-//                    log.info("注册bean" + beanDefinitionInfo.getInterfaceClazz().getName() + " 到 rpcBeanName 中的属性中");
-                }
-            }
+            log.info("注册bean" + beanDefinitionInfo.getInterfaceClazz().getName() + " 到 rpcBeanName 中的属性中");
         }
+//        for (Iterator iterator = rpcObjectMap.keySet().iterator() ; iterator.hasNext();){
+//            String rpcBeanClassName = (String) iterator.next();
+//            List<String> propBeanNames = rpcObjectMap.get(rpcBeanClassName);
+//            if(propBeanNames!=null && propBeanNames.size()>0){
+//                for(String propBeanName : propBeanNames){
+//                      BeanDefinitionInfo beanDefinitionInfo = interfaceNameMap.get(propBeanName);
+//                }
+//            }
+//        }
     }
 
     public List<BeanDefinitionInfo> getBeanDefinitionInfoList() {
@@ -241,10 +263,6 @@ public class HessianInvokerScannerImpl implements HessianInvokerScanner , Applic
 
     public Map<String, List<String>> getRpcObjectMap() {
         return rpcObjectMap;
-    }
-
-    public Map<String, BeanDefinitionInfo> getInterfaceNameMap() {
-        return interfaceNameMap;
     }
 
     @Override
