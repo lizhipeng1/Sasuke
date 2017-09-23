@@ -1,4 +1,4 @@
-package com.rpc.provider;
+package com.rpc.invoker;
 
 
 /**
@@ -7,12 +7,12 @@ package com.rpc.provider;
  * 2. 根据参数（待定） 实施不同的额rpc 服务暴露方法
  * 3. 注册到zk  redis
  */
-public interface ServiceProviderScanner  {
+public interface ServiceInvokeScanner {
     /**
      * 扫描bean  生成beanDefinitionInfo
      * 分派 不同的 rpc 服务的暴露
      * @return
      */
-    void scannerBeanInfo();
+    void scannerAllocateBeanInfo();
 
 }

@@ -1,8 +1,6 @@
 package com.rpc.service;
 
-import com.rpc.invoker.impl.HessianInvokerScannerImpl;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -14,24 +12,11 @@ public class BeanPostProcessorService implements BeanPostProcessor , Application
     private  BeanFactoryPostProcessorService beanFactoryPostProcessorService;
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-
-        if(HessianInvokerScannerImpl.rpcObjectMap.get( beanName )!=null){
-            BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
-            Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
-            return object;
-        }else {
-            return bean;
-        }
+        return bean;
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if(HessianInvokerScannerImpl.rpcObjectMap.get( beanName )!=null){
-            BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(beanName);
-            Object object = beanFactoryPostProcessorService.applicationContext.getBean(beanName);
-            return object;
-        }else {
-            return bean;
-        }
+        return bean;
     }
 
     @Override

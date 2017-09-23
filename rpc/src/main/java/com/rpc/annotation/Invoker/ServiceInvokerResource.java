@@ -1,5 +1,6 @@
 package com.rpc.annotation.Invoker;
 
+import com.rpc.enums.RpcTypeEnum;
 import org.springframework.context.annotation.Lazy;
 
 import javax.annotation.Resource;
@@ -17,4 +18,6 @@ import java.lang.annotation.*;
 @Lazy
 public @interface ServiceInvokerResource {
     String value() default "dev";
+
+    RpcTypeEnum rpcTypeEnum() default RpcTypeEnum.Hessian;
 }

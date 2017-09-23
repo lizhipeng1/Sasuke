@@ -2,7 +2,6 @@ package com.rpc.invoker;
 
 import com.rpc.bean.model.BeanDefinitionInfo;
 
-import java.net.MalformedURLException;
 import java.util.List;
 
 /**
@@ -11,13 +10,7 @@ import java.util.List;
  * 2. 根据参数（待定） 实施不同的rpc 服务 服务获取方法
  * 3. 注册到spring 容器其中
  */
-public interface ServiceInvokerScanner  {
-
-    /**
-     * 获取bean 定义的信息
-     * @return
-     */
-    List<BeanDefinitionInfo> getBeanDefinition() throws Exception;
+public interface ServiceInvokerOperator {
 
     /**
      * 获取具体的服务
@@ -34,5 +27,5 @@ public interface ServiceInvokerScanner  {
     /**
      *
      */
-    void doInvoke();
+    void doInvoke(List<BeanDefinitionInfo> beanDefinitionInfoList);
 }

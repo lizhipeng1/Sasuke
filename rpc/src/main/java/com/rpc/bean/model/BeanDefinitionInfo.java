@@ -1,5 +1,7 @@
 package com.rpc.bean.model;
 
+import com.rpc.enums.RpcTypeEnum;
+
 import java.io.Serializable;
 
 /**
@@ -20,79 +22,99 @@ public class BeanDefinitionInfo implements Serializable {
 
     private String environment; //环境 dev qa pro
 
-    private String filedName;
+    private String filedName;   // 需要 动态注入的字段名
 
-    private String springBeanName;
+    private String springBeanName;  // spring beanName
+
+    private RpcTypeEnum rpcTypeEnum;    // 当前的bean 使用哪种方法暴露rpc 服务
+
+    public RpcTypeEnum getRpcTypeEnum() {
+        return rpcTypeEnum;
+    }
+
+    public BeanDefinitionInfo setRpcTypeEnum(RpcTypeEnum rpcTypeEnum) {
+        this.rpcTypeEnum = rpcTypeEnum;
+        return this;
+    }
 
     public String getSpringBeanName() {
         return springBeanName;
     }
 
-    public void setSpringBeanName(String springBeanName) {
+    public BeanDefinitionInfo setSpringBeanName(String springBeanName) {
         this.springBeanName = springBeanName;
+        return this;
     }
 
     public String getFiledName() {
         return filedName;
     }
 
-    public void setFiledName(String filedName) {
+    public BeanDefinitionInfo setFiledName(String filedName) {
         this.filedName = filedName;
+        return this;
     }
 
     public String getEnvironment() {
         return environment;
     }
 
-    public void setEnvironment(String environment) {
+    public BeanDefinitionInfo setEnvironment(String environment) {
         this.environment = environment;
+        return this;
     }
 
     public String getBeanInterfaceName() {
         return beanInterfaceName;
     }
 
-    public void setBeanInterfaceName(String beanInterfaceName) {
+    public BeanDefinitionInfo setBeanInterfaceName(String beanInterfaceName) {
         this.beanInterfaceName = beanInterfaceName;
+        return this;
     }
 
     public String getRequestUrl() {
         return requestUrl;
     }
 
-    public void setRequestUrl(String requestUrl) {
+    public BeanDefinitionInfo setRequestUrl(String requestUrl) {
         this.requestUrl = requestUrl;
+        return this;
     }
 
     public String getBeanName() {
         return beanName;
     }
 
-    public void setBeanName(String beanName) {
+    public BeanDefinitionInfo setBeanName(String beanName) {
         this.beanName = beanName;
+        return this;
     }
 
     public Class getInterfaceClazz() {
         return interfaceClazz;
     }
 
-    public void setInterfaceClazz(Class interfaceClazz) {
+    public BeanDefinitionInfo setInterfaceClazz(Class interfaceClazz) {
         this.interfaceClazz = interfaceClazz;
+        return this;
     }
 
     public Object getServiceObject() {
         return serviceObject;
     }
 
-    public void setServiceObject(Object serviceObject) {
+    public BeanDefinitionInfo setServiceObject(Object serviceObject) {
         this.serviceObject = serviceObject;
+        return this;
     }
 
     public Class getServiceClazz() {
         return serviceClazz;
     }
 
-    public void setServiceClazz(Class serviceClazz) {
+    public BeanDefinitionInfo setServiceClazz(Class serviceClazz) {
         this.serviceClazz = serviceClazz;
+        return this;
     }
 }

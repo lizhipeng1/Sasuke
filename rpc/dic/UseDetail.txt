@@ -23,9 +23,12 @@
     服务暴露注解：
     @ServiceProvider
 
-2. 添加 web-rpc.xml
+2. 添加 spring-rpc.xml
 
-       <bean class="com.rpc.config.Config">
+    <!-- 开启 扫描 -->
+    <bean class="com.rpc.annotation.config.ServiceProfileConfig" p:startRpc="true" />
+
+    <bean class="com.rpc.config.Config">
    		<constructor-arg index="0" value="http://10.240.251.50:8188/order"/>
    		<constructor-arg index="1" value="order"/>
    		<constructor-arg index="2" value="1"/>
