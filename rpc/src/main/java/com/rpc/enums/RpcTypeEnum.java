@@ -14,7 +14,7 @@ public enum RpcTypeEnum {
 
     Hessian("hessian" , HessianProviderOperator.class , HessianInvokerOperator.class),
     RMI("RMI" , RMIProviderOperator.class , RMIInvokerOperator.class),
-    BRPC("baiduRPC" , null  , null),
+//    BRPC("baiduRPC" , null  , null),
     Dubbo("dubbo" , DubboProviderOperator.class , DubboInvokerOperator.class);
 
     private String name;

@@ -5,28 +5,26 @@ import com.google.common.collect.Maps;
 import com.rpc.Environment;
 import com.rpc.annotation.Invoker.ServiceInvokerAutowired;
 import com.rpc.annotation.Invoker.ServiceInvokerResource;
-import com.rpc.annotation.provider.ServiceProvider;
 import com.rpc.bean.model.BeanDefinitionInfo;
-import com.rpc.config.Config;
 import com.rpc.enums.RpcTypeEnum;
 import com.rpc.invoker.ServiceInvokeScanner;
 import com.rpc.invoker.ServiceInvokerOperator;
-import com.rpc.provider.ServiceProviderOperator;
-import com.rpc.provider.ServiceProviderScanner;
 import com.rpc.service.BeanFactoryPostProcessorService;
 import com.rpc.util.Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, ApplicationContextAware{
@@ -91,6 +89,7 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
             for(Iterator iterator = rpcTypeEnumListMap.keySet().iterator(); iterator.hasNext();){
                 RpcTypeEnum rpcTypeEnum = (RpcTypeEnum) iterator.next();
                 List<BeanDefinitionInfo> beanDefinitionInfosTemp = rpcTypeEnumListMap.get( rpcTypeEnum );
+
                 ServiceInvokerOperator serviceInvokerOperator = (ServiceInvokerOperator) this.applicationContext.getBean( rpcTypeEnum.getInvokeClazz() );
                 serviceInvokerOperator.doInvoke( beanDefinitionInfosTemp );
             }

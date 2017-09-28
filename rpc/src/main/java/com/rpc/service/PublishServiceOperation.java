@@ -1,6 +1,9 @@
 package com.rpc.service;
 
 import com.rpc.annotation.config.ServiceProfileConfig;
+import com.rpc.enums.RpcTypeEnum;
+import com.rpc.exec.ThreadExecutor;
+import com.rpc.invoker.ServiceInvokerOperator;
 import com.rpc.provider.ServiceProviderScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +26,24 @@ public class PublishServiceOperation implements ApplicationContextAware {
 
     private ServiceProfileConfig serviceProfileConfig = null;
 
+    private ThreadExecutor threadExecutor;
+
     @PostConstruct
     public void init(){
+
+        doInvokeService();
+
         if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()){
             log.info(" 执行扫描 Provider 服务发布 ");
             this.serviceProviderScanner = applicationContext.getBean(ServiceProviderScanner.class);
             serviceProviderScanner.scannerBeanInfo();
+        }
+    }
+
+    private void doInvokeService() {
+        for(RpcTypeEnum rpcTypeEnum : RpcTypeEnum.values()){
+            ServiceInvokerOperator serviceInvokerOperator = (ServiceInvokerOperator) applicationContext.getBean(rpcTypeEnum.getInvokeClazz());
+            threadExecutor.execute( serviceInvokerOperator );
         }
     }
 
@@ -37,5 +52,6 @@ public class PublishServiceOperation implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
+        threadExecutor = applicationContext.getBean(ThreadExecutor.class);
     }
 }

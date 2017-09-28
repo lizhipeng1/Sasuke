@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 public class BeanPostProcessorService implements BeanPostProcessor , ApplicationContextAware{
 
     private  BeanFactoryPostProcessorService beanFactoryPostProcessorService;
+    private ApplicationContext applicationContext;
+
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         return bean;
@@ -22,5 +24,6 @@ public class BeanPostProcessorService implements BeanPostProcessor , Application
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.applicationContext = applicationContext;
     }
 }

@@ -1,12 +1,8 @@
-package com.rpc.invoker.impl;
+package com.rpc.exec;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rpc.Environment;
 import com.rpc.bean.model.BeanDefinitionInfo;
-import com.rpc.exec.ThreadExecutor;
-import com.rpc.exec.ThreadRunnable;
-import com.rpc.invoker.HessianInvokerOperator;
-import com.rpc.service.BeanFactoryPostProcessorService;
 import com.rpc.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,36 +10,47 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component
-public class HessianInvokerOperatorImpl implements HessianInvokerOperator, ApplicationContextAware {
-    private static final Logger log= LoggerFactory.getLogger(HessianInvokerOperatorImpl.class);
-    private ApplicationContext applicationContext;
+public class InvokeServiceThread1 implements ThreadRunnable , ApplicationContextAware {
+
+    private static final Logger log= LoggerFactory.getLogger(InvokeServiceThread1.class);
+
 
     private List<BeanDefinitionInfo> beanDefinitionInfoListCopyOnWrite = new CopyOnWriteArrayList<BeanDefinitionInfo>();
-    public ThreadExecutor threadExecutor;
 
-    public void doInvoke( List<BeanDefinitionInfo> beanDefinitionInfoList ) {
-        this.threadExecutor = applicationContext.getBean(ThreadExecutor.class);
-        if(!CollectionUtils.isEmpty(beanDefinitionInfoList)){
-            beanDefinitionInfoListCopyOnWrite.addAll( beanDefinitionInfoList );
-        }
+    private List<BeanDefinitionInfo> beanDefinitionInfoList;
+
+    private  ApplicationContext applicationContext;
+
+
+    public InvokeServiceThread1() {
     }
 
-    /**
-     * 激活 对应环境的服务 获取服务的实例
-     * 添加到bean BeanDefinitionInfo 中
-     * @throws Exception
-     */
-    public void invokeService() {
-        int time = 0;
+
+    public List<BeanDefinitionInfo> getBeanDefinitionInfoList() {
+        return beanDefinitionInfoList;
+    }
+
+    public void setBeanDefinitionInfoList(List<BeanDefinitionInfo> beanDefinitionInfoList) {
+        this.beanDefinitionInfoList = beanDefinitionInfoList ;
+    }
+
+    @Override
+    public void run() {
+        int i=0;
+        this.beanDefinitionInfoListCopyOnWrite.addAll( beanDefinitionInfoList );
         while ( !beanDefinitionInfoListCopyOnWrite.isEmpty() ) {
-            System.out.println("执行 runInvoke "+(time++) );
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("执行 runInvoke "+(i++) );
             for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoListCopyOnWrite) {
                 Object object = applicationContext.getBean(beanDefinitionInfo.getSpringBeanName());
                 if(ReflectionUtils.getFieldValue( object , beanDefinitionInfo.getFiledName() )== null){
@@ -56,7 +63,7 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
                         }
                         String beanDefinitionStr = JSONObject.parse(jsonZKStr).toString();
 
-                        if (org.springframework.util.StringUtils.isEmpty(beanDefinitionStr)) {
+                        if (StringUtils.isEmpty(beanDefinitionStr)) {
                             log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
                             continue;
                         }
@@ -87,19 +94,14 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
             }
         }
     }
+
+    @Override
+    public void shutDown() {
+
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-
-    @Override
-    public void shutDown() {
-        beanDefinitionInfoListCopyOnWrite.clear();
-    }
-
-    @Override
-    public void run() {
-        invokeService();
-    }
 }
-

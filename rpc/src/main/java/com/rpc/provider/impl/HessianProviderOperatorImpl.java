@@ -1,10 +1,10 @@
 package com.rpc.provider.impl;
 
-import com.rpc.Environment;
 import com.rpc.bean.model.BeanDefinitionInfo;
 import com.rpc.config.Config;
 import com.rpc.provider.HessianProviderOperator;
 import com.rpc.service.BeanFactoryPostProcessorService;
+import com.rpc.util.ServiceZKNodeNameUtil;
 import com.rpc.util.ZKUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +55,13 @@ public class HessianProviderOperatorImpl extends HessianProviderOperator impleme
 
     public void registerManager()  throws  Exception{
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
-            String nodeName = "/"+config.getProjectName()+"-"+Environment.environment;
-            nodeName+="/"+beanDefinitionInfo.getInterfaceClazz().getSimpleName();
-            ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
+            String nodeName = ServiceZKNodeNameUtil.getServiceZKNodeName( beanDefinitionInfo.getEnvironment()  ,
+                    beanDefinitionInfo.getInterfaceClazz().getName() );
+            if(ZKUtil.exitNode(nodeName)){
+                ZKUtil.addNodeData( nodeName , beanDefinitionInfo);
+            }else {
+                ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
+            }
         }
     }
 
