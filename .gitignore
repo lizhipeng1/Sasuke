@@ -25,3 +25,8 @@ hs_err_pid*
 /.idea/
 /rpc/rpc.iml
 /rpc-monitor/rpc-monitor.iml
+redis-concurrent/target/
+redis-key-notify/target/
+rpc-monitor/target/
+rpc/src/test/
+rpc/target/
