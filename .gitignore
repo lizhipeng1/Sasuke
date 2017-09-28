@@ -22,6 +22,6 @@
 hs_err_pid*
 /redis-concurrent/redis-concurrent.iml
 /Sasuke.iml
-/rpc/rpc.iml
 /.idea/
+/rpc/rpc.iml
 /rpc-monitor/rpc-monitor.iml
