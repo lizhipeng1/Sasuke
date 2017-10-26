@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<import resource="classpath*:conf/*-component.xml" />
+
+	<import resource="classpath*:conf/web-rpc.xml"/>
+
+	<import resource="classpath*:conf/spring-redis.xml"/>
+
+
+	<bean id="configurableWebBindingInitializer" class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+		<property name="conversionService">
+			<bean class="org.springframework.format.support.FormattingConversionServiceFactoryBean"></bean>
+		</property>
+	</bean>
+
+	<beans profile="pro">
+		<context:property-placeholder ignore-resource-not-found="false"
+									  location="classpath*:/profile/pro/*.properties"/>
+		<import resource="classpath*:conf/*-datasource.xml" />
+	</beans>
+
+	<beans profile="qa">
+		<context:property-placeholder ignore-resource-not-found="false"
+									  location="classpath*:/profile/qa/*.properties"/>
+		<import resource="classpath*:conf/*-datasource.xml" />
+	</beans>
+
+	<beans profile="dev">
+		<context:property-placeholder ignore-resource-not-found="false"
+									  location="classpath*:/profile/dev/*.properties"/>
+		<import resource="classpath*:conf/*-datasource.xml" />
+	</beans>
+
+	<beans profile="dev-lzp">
+		<context:property-placeholder ignore-resource-not-found="false"
+									  location="classpath*:/profile/dev-lzp/*.properties"/>
+		<import resource="classpath*:conf/*-datasource.xml" />
+	</beans>
+
+</beans>

@@ -9,6 +9,8 @@ import com.rpc.enums.RpcTypeEnum;
 import com.rpc.provider.ServiceProviderOperator;
 import com.rpc.provider.ServiceProviderScanner;
 import com.rpc.service.BeanFactoryPostProcessorService;
+import com.rpc.parent.RpcService;
+import com.rpc.util.ReflectionUtils;
 import com.rpc.util.Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -19,10 +21,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ServiceProviderScannerImpl  implements ServiceProviderScanner , ApplicationContextAware{
@@ -75,6 +74,19 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
             }
             this.beanDefinitionInfos = beanDefinitionInfos;
         }
+    }
+
+    private Map<String, Object> doGetRpcBeanMap() {
+        Map<String, Object> maps = new HashMap<String, Object>();
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for(String beanDname : beanDefinitionNames){
+            Object object = applicationContext.getBean(beanDname);
+            Object realObject = ReflectionUtils.getTarget(object);
+            if(realObject!= null &&  realObject instanceof RpcService){
+                maps.put(beanDname , object);
+            }
+        }
+        return null;
     }
 
     private void doAllocateBean() {

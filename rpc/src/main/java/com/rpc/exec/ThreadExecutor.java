@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@Component
+@Component("rpcThreadExecutor")
 public class ThreadExecutor {
     private static final Logger log= LoggerFactory.getLogger(ThreadExecutor.class);
 

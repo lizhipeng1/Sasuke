@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+	<!-- jedis 配置 -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig" >
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+	</bean >
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" >
+		<constructor-arg index="0" ref="poolConfig"/>
+		<constructor-arg index="1" value="${redis.host}"/>
+		<constructor-arg index="2" value="${redis.port}"/>
+		<constructor-arg index="3" value="${redis.timeout}"/>
+		<constructor-arg index="4" value="${redis.password}"/>
+	</bean>
+	<!-- redis服务器中心 -->
+	<bean id="connectionFactory"  class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" >
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="port" value="${redis.port}" />
+		<property name="hostName" value="${redis.host}" />
+		<property name="password" value="${redis.password}" />
+		<property name="timeout" value="${redis.timeout}" ></property>
+	</bean >
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate" >
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="keySerializer" >
+			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer" >
+			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+	</bean>
+
+	<!--<bean id="redisService" class="com.netease.corp.it.tms.messageComponent.RedisService">-->
+		<!--<constructor-arg name="redisTemplate" ref="redisTemplate"/>-->
+		<!--<constructor-arg name="jedisPool" ref="jedisPool"/>-->
+	<!--</bean>-->
+
+	<!--<bean id="messageComponent" class="com.netease.corp.it.tms.messageComponent.MessageComponent">-->
+		<!--<constructor-arg name="redisService" ref="redisService"/>-->
+	<!--</bean>-->
+
+</beans>

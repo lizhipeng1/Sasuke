@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 /**
  * 服务 发布类
  */
@@ -20,6 +22,11 @@ public class InvokeServiceOperation implements ApplicationContextAware {
     private  ApplicationContext applicationContext;
 
     private ServiceProfileConfig serviceProfileConfig = null;
+
+    @PostConstruct
+    public void init(){
+        doInvokeScanner();
+    }
 
 
     public void doInvokeScanner(){

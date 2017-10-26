@@ -41,52 +41,64 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
      * @throws Exception
      */
     public void invokeService() {
-        int time = 0;
-        while ( !beanDefinitionInfoListCopyOnWrite.isEmpty() ) {
-            System.out.println("执行 runInvoke "+(time++) );
-            for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoListCopyOnWrite) {
+        /*
+            1. 每次循环会 动态移除已经添加的服务
+         */
+        while (beanDefinitionInfoListCopyOnWrite!=null && beanDefinitionInfoListCopyOnWrite.size()>0){
+            doInvokeZkService(beanDefinitionInfoListCopyOnWrite);
+        }
+
+    }
+
+    /**
+     * 将 bean 的定义信息 注入到 对应的 service controller 中
+     * @param beanDefinitionInfoListCopyOnWrite
+     */
+    private void doInvokeZkService(List<BeanDefinitionInfo> beanDefinitionInfoListCopyOnWrite) {
+        for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoListCopyOnWrite) {
+            String nodeName = ServiceZKNodeNameUtil.getServiceZKNodeName(beanDefinitionInfo.getEnvironment(),
+                    beanDefinitionInfo.getInterfaceClazz().getName());
+            if (ZKUtil.exitNode(nodeName)) {
                 Object object = applicationContext.getBean(beanDefinitionInfo.getSpringBeanName());
-                if(ReflectionUtils.getFieldValue( object , beanDefinitionInfo.getFiledName() )== null){
-                    String nodeName = ServiceZKNodeNameUtil.getServiceZKNodeName(beanDefinitionInfo.getEnvironment(),
-                            beanDefinitionInfo.getInterfaceClazz().getName());
-                    if (ZKUtil.exitNode(nodeName)) {
-                        String jsonZKStr = ZKUtil.getNodeData(nodeName);
-                        if (jsonZKStr == null || jsonZKStr.length() == 0) {
-                            continue;
-                        }
-                        String beanDefinitionStr = JSONObject.parse(jsonZKStr).toString();
-
-                        if (org.springframework.util.StringUtils.isEmpty(beanDefinitionStr)) {
-                            log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
-                            continue;
-                        }
-                        BeanDefinitionInfo beanDefinitionInfoRpc = JSONObject.parseObject(beanDefinitionStr, BeanDefinitionInfo.class);
-                        if (beanDefinitionInfoRpc == null) {
-                            log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
-                            continue;
-                        }
-                        BeanUtils.copyProperties(beanDefinitionInfoRpc, beanDefinitionInfo, true);
-
-                        if (beanDefinitionInfo.getServiceClazz() != null && applicationContext.getBean(beanDefinitionInfo.getServiceClazz()) != null
-                                && Environment.environment.equals(beanDefinitionInfo.getEnvironment())) {
-                            log.info("当前容器中已经存在 环境为：" + beanDefinitionInfo.getEnvironment() + "的 bean实例：" + beanDefinitionInfo.getServiceClazz().getName() + " 不在注册 rpc 服务bean,使用本容器中的bean实例");
-                            continue;
-                        }
-
-                        try {
-                            beanDefinitionInfo.setServiceObject(HessianUtil.factory.create(beanDefinitionInfo.getInterfaceClazz(), beanDefinitionInfo.getRequestUrl()));
-                        } catch (MalformedURLException e) {
-                            log.info("获取 bean " + beanDefinitionInfo.getInterfaceClazz().getName() + " 出现异常 " + e.toString());
-                            continue;
-                        }
-
-                        ReflectionUtils.setFieldValue(object, beanDefinitionInfo.getFiledName(), beanDefinitionInfo.getServiceObject());
-                        beanDefinitionInfoListCopyOnWrite.remove( beanDefinitionInfo );
+                if (ReflectionUtils.getFieldValue(object, beanDefinitionInfo.getFiledName()) == null) {
+                    String jsonZKStr = ZKUtil.getNodeData(nodeName);
+                    if (jsonZKStr == null || jsonZKStr.length() == 0) {
+                        log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
+                        continue;
                     }
+                    String beanDefinitionStr = JSONObject.parse(jsonZKStr).toString();
+
+                    BeanDefinitionInfo beanDefinitionInfoRpc = JSONObject.parseObject(beanDefinitionStr, BeanDefinitionInfo.class);
+                    if (beanDefinitionInfoRpc == null) {
+                        log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
+                        continue;
+                    }
+                    BeanUtils.copyProperties(beanDefinitionInfoRpc, beanDefinitionInfo, true);
+
+                    if (beanDefinitionInfo.getServiceClazz() != null && applicationContext.getBean(beanDefinitionInfo.getServiceClazz()) != null
+                            && Environment.environment.equals(beanDefinitionInfo.getEnvironment())) {
+                        log.info("当前容器中已经存在 环境为：" + beanDefinitionInfo.getEnvironment() + "的 bean实例：" + beanDefinitionInfo.getServiceClazz().getName() + " 不在注册 rpc 服务bean,使用本容器中的bean实例");
+                        continue;
+                    }
+
+                    try {
+                        beanDefinitionInfo.setServiceObject(HessianUtil.factory.create(beanDefinitionInfo.getInterfaceClazz(), beanDefinitionInfo.getRequestUrl()));
+                    } catch (MalformedURLException e) {
+                        log.info("获取 bean " + beanDefinitionInfo.getInterfaceClazz().getName() + " 出现异常 " + e.toString());
+                        continue;
+                    }
+
+                    ReflectionUtils.setFieldValue(object, beanDefinitionInfo.getFiledName(), beanDefinitionInfo.getServiceObject());
+                    log.info("添加 ：" + beanDefinitionInfo.getEnvironment() + " 下的服务 " + beanDefinitionInfo.getInterfaceClazz().getName() + " 到 ：" + object.getClass().getSimpleName());
+
                 }
+                beanDefinitionInfoListCopyOnWrite.remove(beanDefinitionInfo); // 成功以后移除 服务信息
+            } else {
+                log.info("未找到环境：" + beanDefinitionInfo.getEnvironment() + " 下的服务 ：" + beanDefinitionInfo.getInterfaceClazz().getName());
             }
         }
     }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;

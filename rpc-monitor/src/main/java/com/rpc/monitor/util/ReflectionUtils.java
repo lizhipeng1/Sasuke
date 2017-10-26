@@ -1,4 +1,4 @@
-package com.rpc.util;
+package com.rpc.monitor.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -12,7 +12,10 @@ import org.springframework.util.Assert;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ReflectionUtils {
 
@@ -218,7 +221,7 @@ public abstract class ReflectionUtils {
      * @return Object
      */
     public static <T> T invokeGetterMethod(Object target, String propertyName) {
-        String getterMethodName = "get" + org.apache.commons.lang3.StringUtils.capitalize(propertyName);
+        String getterMethodName = "get" + StringUtils.capitalize(propertyName);
         return (T) invokeMethod(target, getterMethodName, new Class[]{},
                 new Object[]{});
     }
@@ -245,7 +248,7 @@ public abstract class ReflectionUtils {
     public static void invokeSetterMethod(Object target, String propertyName,
                                           Object value, Class<?> FieldType) {
         Class<?> type = FieldType != null ? FieldType : value.getClass();
-        String setterMethodName = "set" + org.apache.commons.lang3.StringUtils.capitalize(propertyName);
+        String setterMethodName = "set" + StringUtils.capitalize(propertyName);
         invokeMethod(target, setterMethodName, new Class[]{type},
                 new Object[]{value});
     }
@@ -877,7 +880,7 @@ public abstract class ReflectionUtils {
      * @return
      */
     public  static Class[] getMethodParamClass(Object target,String propertyName ){
-        String setterMethodName = "set" + org.apache.commons.lang3.StringUtils.capitalize(propertyName);
+        String setterMethodName = "set" + StringUtils.capitalize(propertyName);
         Method[] methods=target.getClass().getMethods();
         Class[] backcls=null;
         for(Method method :methods){
@@ -936,20 +939,19 @@ public abstract class ReflectionUtils {
      * @return
      * @throws Exception
      */
-    public static Object getTarget(Object proxy) {
+    public static Object getTarget(Object proxy) throws Exception {
 
         if(!AopUtils.isAopProxy(proxy)) {
             return proxy;//不是代理对象
         }
-        try {
-            if(AopUtils.isJdkDynamicProxy(proxy)) {
-                return getJdkDynamicProxyTargetObject(proxy);
-            } else { //cglib
-                return getCglibProxyTargetObject(proxy);
-            }
-        }catch (Exception e){
-            return  null;
+
+        if(AopUtils.isJdkDynamicProxy(proxy)) {
+            return getJdkDynamicProxyTargetObject(proxy);
+        } else { //cglib
+            return getCglibProxyTargetObject(proxy);
         }
+
+
 
     }
 

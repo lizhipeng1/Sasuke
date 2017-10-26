@@ -55,24 +55,31 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
                 Class clazz = applicationContext.getType(beanName);
-                if(clazz != null) {
-                    Field[] fields =clazz.getDeclaredFields();
-                    for (Field field : fields) {
-                        log.info(field.getName());
-                        ServiceInvokerResource serviceInvokerResource = field.getAnnotation(ServiceInvokerResource.class);
-                        ServiceInvokerAutowired serviceInvokerAutowired = field.getAnnotation(ServiceInvokerAutowired.class);
-                        BeanDefinitionInfo beanDefinitionInfo = null;
-                        if (serviceInvokerResource != null) {
-                            beanDefinitionInfo = doDealInvokeResource(beanName , field, serviceInvokerResource);
-                        }
-                        if (serviceInvokerAutowired != null) {
-                            beanDefinitionInfo = doDealInvokeAutowired(beanName , field, serviceInvokerAutowired);
-                        }
-                        if (beanDefinitionInfo != null) {
-                            beanDefinitionInfo.setSpringBeanName( beanName );
-                            beanDefinitionInfos.add(beanDefinitionInfo);
-                        }
-                    }
+                while (clazz!= null && !"java.lang.Object".equals(clazz.getName())){
+                    doGetFieldAnnotation(clazz , beanName);
+                    clazz = clazz.getSuperclass();
+                }
+
+            }
+        }
+    }
+
+    private void doGetFieldAnnotation(Class clazz , String springBeanName) {
+        if(clazz != null) {
+            Field[] fields =clazz.getDeclaredFields();
+            for (Field field : fields) {
+                ServiceInvokerResource serviceInvokerResource = field.getAnnotation(ServiceInvokerResource.class);
+                ServiceInvokerAutowired serviceInvokerAutowired = field.getAnnotation(ServiceInvokerAutowired.class);
+                BeanDefinitionInfo beanDefinitionInfo = null;
+                if (serviceInvokerResource != null) {
+                    beanDefinitionInfo = doDealInvokeResource(springBeanName , field, serviceInvokerResource);
+                }
+                if (serviceInvokerAutowired != null) {
+                    beanDefinitionInfo = doDealInvokeAutowired(springBeanName , field, serviceInvokerAutowired);
+                }
+                if (beanDefinitionInfo != null) {
+                    beanDefinitionInfo.setSpringBeanName( springBeanName );
+                    beanDefinitionInfos.add(beanDefinitionInfo);
                 }
             }
         }

@@ -30,8 +30,8 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
         // 执行 服务激活
-        invokeServiceOperation = applicationContext.getBean(InvokeServiceOperation.class);
-        invokeServiceOperation.doInvokeScanner();
+//        invokeServiceOperation = applicationContext.getBean(InvokeServiceOperation.class);
+//         invokeServiceOperation.doInvokeScanner();
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
