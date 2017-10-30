@@ -351,7 +351,7 @@ public abstract class ReflectionUtils {
     public static Field getAccessibleField(final Object target,
                                            final String fieldName) {
         Assert.notNull(target, "target不能为空");
-        return getAccessibleField(getTargetClass(target), fieldName);
+        return getAccessibleField(getTarget(target).getClass(), fieldName);
     }
 
     /**

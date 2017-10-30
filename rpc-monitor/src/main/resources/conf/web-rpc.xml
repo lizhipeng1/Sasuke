@@ -11,10 +11,12 @@
 	<bean class="com.rpc.annotation.config.ServiceProfileConfig" p:startRpc="true" />
 
 	<bean class="com.rpc.config.Config">
-		<constructor-arg index="0" value="http://10.240.251.50:8888/portal"/>
-		<constructor-arg index="1" value="portal"/>
+		<constructor-arg index="0" value="http://10.240.251.50:9999/rpc-monitor"/>
+		<constructor-arg index="1" value="rpc-monitor"/>
 		<constructor-arg index="2" value="1"/>
 	</bean>
+
+	<context:component-scan base-package="com.track" />
 
 	<context:component-scan base-package="com.rpc" />
 

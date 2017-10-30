@@ -14,7 +14,7 @@ import java.util.List;
 public interface ServiceInvokerOperator extends ThreadRunnable {
 
     /**
-     * 获取具体的服务
+     * 获取具体的服务 直接反射注入 spring bean
      * 需要做判断验证（待续）
      */
     void invokeService();
@@ -23,4 +23,5 @@ public interface ServiceInvokerOperator extends ThreadRunnable {
      *  统一注册方法
      */
     void doInvoke(List<BeanDefinitionInfo> beanDefinitionInfoList);
+
 }

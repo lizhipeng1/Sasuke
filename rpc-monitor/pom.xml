@@ -144,8 +144,37 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-codec</artifactId>
+                    <groupId>commons-codec</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc14</artifactId>
+            <version>10.2.0.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.53</version>
+        </dependency>
 
-
+        <dependency>
+            <groupId>com.netease.corp.it</groupId>
+            <artifactId>workflow-common</artifactId>
+            <version>0.0.1</version>
+        </dependency>
 
 
     </dependencies>
@@ -193,7 +222,7 @@
                     <path>/rpc-monitor</path>
                     <uriEncoding>utf-8</uriEncoding>
                     <systemProperties>
-                        <spring.profiles.active>dev-lzp</spring.profiles.active>
+                        <spring.profiles.active>dev</spring.profiles.active>
                         <JAVA_OPTS>-Xms256m -Xmx512m -XX:PermSize=128M -XX:MaxPermSize=512M</JAVA_OPTS>
                         <log_dir>/Users/profile.pro/Dev/logs/Naruto</log_dir>
                     </systemProperties>

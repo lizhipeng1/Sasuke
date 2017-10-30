@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.rpc.monitor.dao.ServiceInfoDao" >
+  <resultMap id="BaseResultMap" type="com.rpc.monitor.model.ServiceInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="bean_interface_name" property="beanInterfaceName" jdbcType="VARCHAR" />
+    <result column="bean_name" property="beanName" jdbcType="VARCHAR" />
+    <result column="interface_clazz" property="interfaceClazz" jdbcType="VARCHAR" />
+    <result column="request_url" property="requestUrl" jdbcType="VARCHAR" />
+    <result column="rpc_type_enum" property="rpcTypeEnum" jdbcType="VARCHAR" />
+    <result column="service_clazz" property="serviceClazz" jdbcType="VARCHAR" />
+    <result column="environment" property="environment" jdbcType="VARCHAR" />
+    <result column="alive" property="alive" jdbcType="TINYINT" />
+    <result column="create_dateTime" property="createDatetime" jdbcType="TIMESTAMP" />
+    <result column="modify_dateTime" property="modifyDatetime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, bean_interface_name, bean_name, interface_clazz, request_url, rpc_type_enum, 
+    service_clazz, environment,  alive, create_dateTime, modify_dateTime
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from service_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from service_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.rpc.monitor.model.ServiceInfo" >
+    insert into service_info (id, bean_interface_name, bean_name, 
+      interface_clazz, request_url, rpc_type_enum, 
+      service_clazz, environment, alive,
+      create_dateTime, modify_dateTime)
+    values (#{id,jdbcType=INTEGER}, #{beanInterfaceName,jdbcType=VARCHAR}, #{beanName,jdbcType=VARCHAR}, 
+      #{interfaceClazz,jdbcType=VARCHAR}, #{requestUrl,jdbcType=VARCHAR}, #{rpcTypeEnum,jdbcType=VARCHAR}, 
+      #{serviceClazz,jdbcType=VARCHAR}, #{environment,jdbcType=VARCHAR},   #{alive,jdbcType=TINYINT},
+      #{createDatetime,jdbcType=TIMESTAMP}, #{modifyDatetime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into service_info  ( bean_interface_name, bean_name,
+    interface_clazz, request_url, rpc_type_enum,
+    service_clazz, environment,  alive,
+    create_dateTime, modify_dateTime)
+    values
+    <foreach collection="serviceInfoList"   separator="," item="item">
+      ( #{item.beanInterfaceName,jdbcType=VARCHAR}, #{item.beanName,jdbcType=VARCHAR},
+      #{item.interfaceClazz,jdbcType=VARCHAR}, #{item.requestUrl,jdbcType=VARCHAR}, #{item.rpcTypeEnum,jdbcType=VARCHAR},
+      #{item.serviceClazz,jdbcType=VARCHAR}, #{item.environment,jdbcType=VARCHAR} , 1,
+      now(), now() )
+    </foreach>
+    ON duplicate KEY UPDATE
+    bean_interface_name = VALUES(bean_interface_name),
+    bean_name = VALUES(bean_name),
+    interface_clazz = VALUES(interface_clazz),
+    request_url = VALUES(request_url),
+    rpc_type_enum = VALUES(rpc_type_enum),
+    service_clazz = VALUES(service_clazz),
+    environment = VALUES(environment),
+    alive = VALUES(alive),
+    create_dateTime = VALUES(create_dateTime),
+    modify_dateTime =  now()
+  </insert>
+
+
+  <insert id="insertSelective" parameterType="com.rpc.monitor.model.ServiceInfo" >
+    insert into service_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="beanInterfaceName != null" >
+        bean_interface_name,
+      </if>
+      <if test="beanName != null" >
+        bean_name,
+      </if>
+      <if test="interfaceClazz != null" >
+        interface_clazz,
+      </if>
+      <if test="requestUrl != null" >
+        request_url,
+      </if>
+      <if test="rpcTypeEnum != null" >
+        rpc_type_enum,
+      </if>
+      <if test="serviceClazz != null" >
+        service_clazz,
+      </if>
+      <if test="environment != null" >
+        environment,
+      </if>
+      <if test="alive != null" >
+        alive,
+      </if>
+      <if test="createDatetime != null" >
+        create_dateTime,
+      </if>
+      <if test="modifyDatetime != null" >
+        modify_dateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="beanInterfaceName != null" >
+        #{beanInterfaceName,jdbcType=VARCHAR},
+      </if>
+      <if test="beanName != null" >
+        #{beanName,jdbcType=VARCHAR},
+      </if>
+      <if test="interfaceClazz != null" >
+        #{interfaceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="requestUrl != null" >
+        #{requestUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="rpcTypeEnum != null" >
+        #{rpcTypeEnum,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceClazz != null" >
+        #{serviceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="environment != null" >
+        #{environment,jdbcType=VARCHAR},
+      </if>
+      <if test="alive != null" >
+        #{alive,jdbcType=TINYINT},
+      </if>
+      <if test="createDatetime != null" >
+        create_dateTime = #{createDatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createDatetime == null" >
+        create_dateTime = now(),
+      </if>
+      <if test="modifyDatetime != null" >
+        modify_dateTime = #{modifyDatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyDatetime == null" >
+        modify_dateTime =  now(),
+      </if>
+    </trim>
+    on duplicate key UPDATE
+    <trim prefix=" "  >
+      <if test="beanInterfaceName != null" >
+        bean_interface_name = #{beanInterfaceName,jdbcType=VARCHAR},
+      </if>
+      <if test="beanName != null" >
+        bean_name = #{beanName,jdbcType=VARCHAR},
+      </if>
+      <if test="interfaceClazz != null" >
+        interface_clazz = #{interfaceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="requestUrl != null" >
+        request_url = #{requestUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="rpcTypeEnum != null" >
+        rpc_type_enum = #{rpcTypeEnum,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceClazz != null" >
+        service_clazz = #{serviceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="environment != null" >
+        environment = #{environment,jdbcType=VARCHAR},
+      </if>
+      <if test="alive != null" >
+        alive = #{alive,jdbcType=TINYINT},
+      </if>
+      <if test="createDatetime != null" >
+        create_dateTime = #{createDatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyDatetime != null" >
+        modify_dateTime = #{modifyDatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyDatetime == null" >
+        modify_dateTime =  now(),
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.rpc.monitor.model.ServiceInfo" >
+    update service_info
+    <set >
+      <if test="beanInterfaceName != null" >
+        bean_interface_name = #{beanInterfaceName,jdbcType=VARCHAR},
+      </if>
+      <if test="beanName != null" >
+        bean_name = #{beanName,jdbcType=VARCHAR},
+      </if>
+      <if test="interfaceClazz != null" >
+        interface_clazz = #{interfaceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="requestUrl != null" >
+        request_url = #{requestUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="rpcTypeEnum != null" >
+        rpc_type_enum = #{rpcTypeEnum,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceClazz != null" >
+        service_clazz = #{serviceClazz,jdbcType=VARCHAR},
+      </if>
+      <if test="environment != null" >
+        environment = #{environment,jdbcType=VARCHAR},
+      </if>
+      <if test="alive != null" >
+        alive = #{alive,jdbcType=TINYINT},
+      </if>
+      <if test="createDatetime != null" >
+        create_dateTime = #{createDatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyDatetime != null" >
+        modify_dateTime = #{modifyDatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.rpc.monitor.model.ServiceInfo" >
+    update service_info
+    set bean_interface_name = #{beanInterfaceName,jdbcType=VARCHAR},
+      bean_name = #{beanName,jdbcType=VARCHAR},
+      interface_clazz = #{interfaceClazz,jdbcType=VARCHAR},
+      request_url = #{requestUrl,jdbcType=VARCHAR},
+      rpc_type_enum = #{rpcTypeEnum,jdbcType=VARCHAR},
+      service_clazz = #{serviceClazz,jdbcType=VARCHAR},
+      environment = #{environment,jdbcType=VARCHAR},
+      alive = #{alive,jdbcType=TINYINT},
+      create_dateTime = #{createDatetime,jdbcType=TIMESTAMP},
+      modify_dateTime = #{modifyDatetime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <sql id="Where_Condition">
+    <trim prefix="where" suffixOverrides="and">
+      <if test="beanInterfaceName != null" >
+        bean_interface_name = #{beanInterfaceName,jdbcType=VARCHAR} and
+      </if>
+      <if test="beanName != null" >
+        bean_name = #{beanName,jdbcType=VARCHAR},
+      </if>
+      <if test="interfaceClazz != null" >
+        interface_clazz = #{interfaceClazz,jdbcType=VARCHAR} and
+      </if>
+      <if test="requestUrl != null" >
+        request_url = #{requestUrl,jdbcType=VARCHAR} and
+      </if>
+      <if test="rpcTypeEnum != null" >
+        rpc_type_enum = #{rpcTypeEnum,jdbcType=VARCHAR} and
+      </if>
+      <if test="serviceClazz != null" >
+        service_clazz = #{serviceClazz,jdbcType=VARCHAR} and
+      </if>
+      <if test="environment != null" >
+        environment = #{environment,jdbcType=VARCHAR} and
+      </if>
+      <if test="alive != null" >
+        alive = #{alive,jdbcType=TINYINT} and
+      </if>
+      <if test="createDatetime != null" >
+        create_dateTime = #{createDatetime,jdbcType=TIMESTAMP} and
+      </if>
+      <if test="modifyDatetime != null" >
+        modify_dateTime = #{modifyDatetime,jdbcType=TIMESTAMP} and
+      </if>
+    </trim>
+  </sql>
+  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="com.rpc.monitor.model.ServiceInfo" >
+    select * from service_info
+    <include refid="Where_Condition" />
+  </select>
+
+</mapper>

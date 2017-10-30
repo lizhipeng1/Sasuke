@@ -2,6 +2,7 @@ package com.rpc.annotation.Invoker;
 
 import com.rpc.enums.RpcTypeEnum;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
 import javax.annotation.Resource;
@@ -16,7 +17,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Lazy
 public @interface ServiceInvokerResource {
     String value() default "dev";
 

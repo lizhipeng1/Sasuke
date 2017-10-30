@@ -16,4 +16,5 @@ public @interface ServiceProvider {
     String value() default "";
 
     RpcTypeEnum rpcTypeEnum() default RpcTypeEnum.Hessian;
+
 }

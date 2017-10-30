@@ -27,7 +27,16 @@ public class BeanDefinitionInfo implements Serializable {
     private String springBeanName;  // spring beanName
 
     private RpcTypeEnum rpcTypeEnum;    // 当前的bean 使用哪种方法暴露rpc 服务
+    private String heartBeatMethodName; // 用于心跳检测的方法
 
+    public String getHeartBeatMethodName() {
+        return heartBeatMethodName;
+    }
+
+    public  BeanDefinitionInfo setHeartBeatMethodName(String heartBeatMethodName) {
+        this.heartBeatMethodName = heartBeatMethodName;
+        return this;
+    }
     public RpcTypeEnum getRpcTypeEnum() {
         return rpcTypeEnum;
     }

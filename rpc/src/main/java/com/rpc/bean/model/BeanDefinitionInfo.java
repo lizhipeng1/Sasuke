@@ -28,93 +28,99 @@ public class BeanDefinitionInfo implements Serializable {
 
     private RpcTypeEnum rpcTypeEnum;    // 当前的bean 使用哪种方法暴露rpc 服务
 
-    public RpcTypeEnum getRpcTypeEnum() {
-        return rpcTypeEnum;
+    public BeanDefinitionInfo() {
     }
 
-    public BeanDefinitionInfo setRpcTypeEnum(RpcTypeEnum rpcTypeEnum) {
-        this.rpcTypeEnum = rpcTypeEnum;
-        return this;
-    }
-
-    public String getSpringBeanName() {
-        return springBeanName;
-    }
-
-    public BeanDefinitionInfo setSpringBeanName(String springBeanName) {
-        this.springBeanName = springBeanName;
-        return this;
-    }
-
-    public String getFiledName() {
-        return filedName;
-    }
-
-    public BeanDefinitionInfo setFiledName(String filedName) {
-        this.filedName = filedName;
-        return this;
-    }
-
-    public String getEnvironment() {
-        return environment;
-    }
-
-    public BeanDefinitionInfo setEnvironment(String environment) {
-        this.environment = environment;
-        return this;
-    }
-
-    public String getBeanInterfaceName() {
-        return beanInterfaceName;
-    }
-
-    public BeanDefinitionInfo setBeanInterfaceName(String beanInterfaceName) {
+    public BeanDefinitionInfo(String requestUrl, String beanInterfaceName, String beanName, Class interfaceClazz, Class serviceClazz, Object serviceObject, String environment, String filedName, String springBeanName, RpcTypeEnum rpcTypeEnum) {
+        this.requestUrl = requestUrl;
         this.beanInterfaceName = beanInterfaceName;
-        return this;
+        this.beanName = beanName;
+        this.interfaceClazz = interfaceClazz;
+        this.serviceClazz = serviceClazz;
+        this.serviceObject = serviceObject;
+        this.environment = environment;
+        this.filedName = filedName;
+        this.springBeanName = springBeanName;
+        this.rpcTypeEnum = rpcTypeEnum;
     }
 
     public String getRequestUrl() {
         return requestUrl;
     }
 
-    public BeanDefinitionInfo setRequestUrl(String requestUrl) {
+    public void setRequestUrl(String requestUrl) {
         this.requestUrl = requestUrl;
-        return this;
+    }
+
+    public String getBeanInterfaceName() {
+        return beanInterfaceName;
+    }
+
+    public void setBeanInterfaceName(String beanInterfaceName) {
+        this.beanInterfaceName = beanInterfaceName;
     }
 
     public String getBeanName() {
         return beanName;
     }
 
-    public BeanDefinitionInfo setBeanName(String beanName) {
+    public void setBeanName(String beanName) {
         this.beanName = beanName;
-        return this;
     }
 
     public Class getInterfaceClazz() {
         return interfaceClazz;
     }
 
-    public BeanDefinitionInfo setInterfaceClazz(Class interfaceClazz) {
+    public void setInterfaceClazz(Class interfaceClazz) {
         this.interfaceClazz = interfaceClazz;
-        return this;
-    }
-
-    public Object getServiceObject() {
-        return serviceObject;
-    }
-
-    public BeanDefinitionInfo setServiceObject(Object serviceObject) {
-        this.serviceObject = serviceObject;
-        return this;
     }
 
     public Class getServiceClazz() {
         return serviceClazz;
     }
 
-    public BeanDefinitionInfo setServiceClazz(Class serviceClazz) {
+    public void setServiceClazz(Class serviceClazz) {
         this.serviceClazz = serviceClazz;
-        return this;
+    }
+
+    public Object getServiceObject() {
+        return serviceObject;
+    }
+
+    public void setServiceObject(Object serviceObject) {
+        this.serviceObject = serviceObject;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
+    public String getFiledName() {
+        return filedName;
+    }
+
+    public void setFiledName(String filedName) {
+        this.filedName = filedName;
+    }
+
+    public String getSpringBeanName() {
+        return springBeanName;
+    }
+
+    public void setSpringBeanName(String springBeanName) {
+        this.springBeanName = springBeanName;
+    }
+
+    public RpcTypeEnum getRpcTypeEnum() {
+        return rpcTypeEnum;
+    }
+
+    public void setRpcTypeEnum(RpcTypeEnum rpcTypeEnum) {
+        this.rpcTypeEnum = rpcTypeEnum;
     }
 }

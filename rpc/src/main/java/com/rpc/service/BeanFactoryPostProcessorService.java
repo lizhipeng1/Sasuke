@@ -1,6 +1,8 @@
 package com.rpc.service;
 
+import com.rpc.annotation.config.ServiceProfileConfig;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -20,6 +22,8 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
 
     private InvokeServiceOperation invokeServiceOperation;
 
+    private ServiceProfileConfig serviceProfileConfig = null;
+
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         this.configurableListableBeanFactory = configurableListableBeanFactory;
@@ -29,13 +33,24 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
 //         获取bean工厂并转换为DefaultListableBeanFactory
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
-        // 执行 服务激活
-//        invokeServiceOperation = applicationContext.getBean(InvokeServiceOperation.class);
-//         invokeServiceOperation.doInvokeScanner();
+        doRegisterToSpring();
+    }
+
+    private void doRegisterToSpring() {
+        // 判断是否需要执行rpc 服务
+        if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()) {
+            invokeServiceOperation = defaultListableBeanFactory.getBean(InvokeServiceOperation.class);
+            invokeServiceOperation.doInvokeRegisterToSpring();
+        }
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
+    }
+
+    public DefaultListableBeanFactory getDefaultListableBeanFactory() {
+        return defaultListableBeanFactory;
     }
 
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {

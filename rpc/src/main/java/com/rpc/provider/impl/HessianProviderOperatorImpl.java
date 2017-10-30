@@ -27,6 +27,7 @@ public class HessianProviderOperatorImpl extends HessianProviderOperator impleme
     private  List<BeanDefinitionInfo> beanDefinitionInfoList;
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
     private Config config;
+    private ZKUtil zkUtil;
 
     public void doProvider(List<BeanDefinitionInfo> beanDefinitionInfoList){
         this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
@@ -57,10 +58,10 @@ public class HessianProviderOperatorImpl extends HessianProviderOperator impleme
         for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
             String nodeName = ServiceZKNodeNameUtil.getServiceZKNodeName( beanDefinitionInfo.getEnvironment()  ,
                     beanDefinitionInfo.getInterfaceClazz().getName() );
-            if(ZKUtil.exitNode(nodeName)){
-                ZKUtil.addNodeData( nodeName , beanDefinitionInfo);
+            if(zkUtil.exitNode(nodeName)){
+                zkUtil.addNodeData( nodeName , beanDefinitionInfo);
             }else {
-                ZKUtil.createNodeWithData( nodeName , beanDefinitionInfo);
+                zkUtil.createNodeWithData( nodeName , beanDefinitionInfo);
             }
         }
     }
@@ -69,5 +70,6 @@ public class HessianProviderOperatorImpl extends HessianProviderOperator impleme
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.zkUtil = applicationContext.getBean(ZKUtil.class);
     }
 }

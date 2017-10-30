@@ -1,5 +1,6 @@
 package com.rpc.invoker.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rpc.Environment;
@@ -10,11 +11,14 @@ import com.rpc.enums.RpcTypeEnum;
 import com.rpc.invoker.ServiceInvokeScanner;
 import com.rpc.invoker.ServiceInvokerOperator;
 import com.rpc.service.BeanFactoryPostProcessorService;
+import com.rpc.util.ReflectionUtils;
 import com.rpc.util.Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -32,11 +36,13 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
     private ApplicationContext applicationContext;
 
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
+    private DefaultListableBeanFactory defaultListableBeanFactory;
     private  List<BeanDefinitionInfo> beanDefinitionInfos;
     private Map<String , List<String>> springBeanProp = null;
 
     public void scannerAllocateBeanInfo(){
         this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.defaultListableBeanFactory = beanFactoryPostProcessorService.getDefaultListableBeanFactory();
         doScannerBeanInfo();
         doAllocateBean();
     }
@@ -50,14 +56,25 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
         beanDefinitionInfos = Lists.newArrayList();
         springBeanProp = Maps.newHashMap();
         // 先获取 所有包含InvokeService 注解的属性
-        String[] beanDefinitionNames = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinitionNames();
+        String[] beanDefinitionNames = defaultListableBeanFactory.getBeanDefinitionNames();
+        System.out.println(JSONObject.toJSONString(beanDefinitionNames));
         if(beanDefinitionNames != null && beanDefinitionNames.length>0) {
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
-                Class clazz = applicationContext.getType(beanName);
-                while (clazz!= null && !"java.lang.Object".equals(clazz.getName())){
-                    doGetFieldAnnotation(clazz , beanName);
-                    clazz = clazz.getSuperclass();
+
+                BeanDefinition  beanDefinition =defaultListableBeanFactory.getBeanDefinition(beanName);
+                String beanClassName = beanDefinition.getBeanClassName();
+                if(!StringUtils.isEmpty(beanClassName)) {
+                    Class clazz = null;
+                    try {
+                        clazz = Class.forName(beanClassName);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    while (clazz != null && !"java.lang.Object".equals(clazz.getName())) {
+                        doGetFieldAnnotation(clazz, beanName);
+                        clazz = clazz.getSuperclass();
+                    }
                 }
 
             }

@@ -9,10 +9,7 @@
 
 	<import resource="classpath*:conf/*-component.xml" />
 
-	<import resource="classpath*:conf/web-rpc.xml"/>
-
 	<import resource="classpath*:conf/spring-redis.xml"/>
-
 
 	<bean id="configurableWebBindingInitializer" class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
 		<property name="conversionService">
@@ -40,7 +37,7 @@
 
 	<beans profile="dev-lzp">
 		<context:property-placeholder ignore-resource-not-found="false"
-									  location="classpath*:/profile/dev-lzp/*.properties"/>
+									  location="classpath*:/profile/dev/*.properties"/>
 		<import resource="classpath*:conf/*-datasource.xml" />
 	</beans>
 

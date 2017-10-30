@@ -1,6 +1,7 @@
 package com.rpc.annotation.Invoker;
 
 import com.rpc.enums.RpcTypeEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
 import java.lang.annotation.*;
@@ -14,7 +15,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Lazy
+@Autowired
 public @interface ServiceInvokerAutowired {
 
     RpcTypeEnum rpcTypeEnum() default RpcTypeEnum.Hessian;

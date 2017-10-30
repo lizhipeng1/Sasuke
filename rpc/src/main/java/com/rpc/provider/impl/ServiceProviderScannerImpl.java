@@ -59,17 +59,15 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
                     String beanName = parentName.substring(0,1).toLowerCase()+parentName.substring(1);
                     String url = "/" +beanName;
                     ServiceProvider serviceProvider = (ServiceProvider) clazz.getAnnotation(ServiceProvider.class);
-
-                    beanDefinitionInfos.add(
-                            new BeanDefinitionInfo().
-                                    setInterfaceClazz(clazz.getInterfaces()[0]).
-                                    setServiceClazz(clazz).
-                                    setBeanInterfaceName( beanName ).
-                                    setRequestUrl(  config.getRpcServerPrefix()+url  ).
-                                    setEnvironment( Environment.environment).
-                                    setBeanName(tem).
-                                    setRpcTypeEnum(serviceProvider.rpcTypeEnum())
-                    );
+                    BeanDefinitionInfo beanDefinitionInfo =  new BeanDefinitionInfo();
+                    beanDefinitionInfo.setInterfaceClazz(clazz.getInterfaces()[0]);
+                    beanDefinitionInfo.setServiceClazz(clazz);
+                    beanDefinitionInfo.setBeanInterfaceName( beanName );
+                    beanDefinitionInfo.setRequestUrl(  config.getRpcServerPrefix()+url  );
+                    beanDefinitionInfo.setEnvironment( Environment.environment);
+                    beanDefinitionInfo.setBeanName(tem);
+                    beanDefinitionInfo.setRpcTypeEnum(serviceProvider.rpcTypeEnum());
+                    beanDefinitionInfos.add( beanDefinitionInfo );
                 }
             }
             this.beanDefinitionInfos = beanDefinitionInfos;

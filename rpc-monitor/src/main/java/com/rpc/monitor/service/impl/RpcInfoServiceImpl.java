@@ -1,6 +1,7 @@
 package com.rpc.monitor.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.rpc.monitor.constant.Constant;
 import com.rpc.monitor.dao.ServiceInfoDao;
@@ -8,6 +9,7 @@ import com.rpc.monitor.model.BeanDefinitionInfo;
 import com.rpc.monitor.model.ServiceInfo;
 import com.rpc.monitor.service.RpcInfoService;
 import com.rpc.monitor.util.ZKUtil;
+import com.rpc.util.BeanUtils;
 import com.rpc.util.HessianUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -32,8 +34,13 @@ public class RpcInfoServiceImpl implements RpcInfoService {
     private ServiceInfoDao serviceInfoDao;
 
     @Override
-    public List<ServiceInfo> getAllServiceInfo() {
+    public List<ServiceInfo> getAllZKServiceInfo() {
         return getServiceInfoByPath(Constant.rootNode);
+    }
+
+    @Override
+    public List<ServiceInfo> getAllDBServiceInfo(ServiceInfo serviceInfo) {
+        return serviceInfoDao.selectByCondition(serviceInfo);
     }
 
     @Override
@@ -44,27 +51,28 @@ public class RpcInfoServiceImpl implements RpcInfoService {
 
     @Override
     public boolean persistenceServiceInfo() {
-        List<ServiceInfo> serviceInfoList = getAllServiceInfo();
+        List<ServiceInfo> serviceInfoList = getAllZKServiceInfo();
         return  serviceInfoDao.batchInsert(serviceInfoList) >0;
     }
 
     @Override
-    public List<Object> invokeServiceInfo( List<ServiceInfo> serviceInfoList ){
-        List<Object> objectList = Lists.newArrayList();
-        if(CollectionUtils.isNotEmpty( serviceInfoList )){
-            for(ServiceInfo serviceInfo : serviceInfoList){
-                Object hessianObject = null;
-                try {
-                    hessianObject = HessianUtil.factory.create(Class.forName(serviceInfo.getInterfaceClazz()), serviceInfo.getRequestUrl());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-                objectList.add( hessianObject );
-            }
-        }
-        return objectList;
+    public List<ServiceInfo> invokeServiceInfo( List<ServiceInfo> serviceInfoList ){
+//        if(CollectionUtils.isNotEmpty( serviceInfoList )){
+//
+//            return Lists.transform(serviceInfoList, new Function<ServiceInfo, ServiceInfo>() {
+//                @Override
+//                public ServiceInfo apply(ServiceInfo serviceInfo) {
+//                    Object object = null;
+//                    try {
+//                        object = HessianUtil.factory.create(Class.forName(serviceInfo.getInterfaceClazz()), serviceInfo.getRequestUrl());
+//                    } catch ( Exception e) {
+//                        logger.info(e.toString());
+//                    }
+//                    return serviceInfo.setRpcObject(object);
+//                }
+//            });
+//        }
+        return null;
     }
 
     private <T> T nodeDataToModel(String data , Class<T> clazz ) {

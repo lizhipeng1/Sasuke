@@ -26,6 +26,7 @@ public class ServiceInfo implements Serializable {
 
     private Date modifyDatetime;    // 更新时间
 
+
     public Integer getId() {
         return id;
     }

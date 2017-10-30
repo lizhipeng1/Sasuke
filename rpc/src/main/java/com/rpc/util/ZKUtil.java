@@ -6,28 +6,41 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
 
 public class ZKUtil {
 
     private static final Logger logger= LoggerFactory.getLogger(ZKUtil.class);
-    private static final String connectString = "192.168.146.128:4180,192.168.146.128:4181,192.168.146.128:4182";
-    private static CuratorFramework client;
 
-    public static CuratorFramework getClient() {
-        return client;
+    private  String connectString ;
+
+    private Integer baseSleepTimeMs;
+
+    private Integer maxRetries;
+
+    public ZKUtil(String connectString, Integer baseSleepTimeMs, Integer maxRetries) {
+        this.connectString = connectString;
+        this.baseSleepTimeMs = baseSleepTimeMs;
+        this.maxRetries = maxRetries;
     }
 
-    static {
+    private   CuratorFramework client;
+
+
+
+    public void init(){
         client = CuratorFrameworkFactory.builder()
                 .connectString(connectString)
-                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .retryPolicy(new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries))
                 .build();
         client.start();
     }
 
-    public static void deleteNode( String node ){
+    public   void deleteNode( String node ){
         try {
             client.delete().forPath(node);
         } catch (Exception e) {
@@ -35,7 +48,7 @@ public class ZKUtil {
         }
     }
 
-    public static void createNode( String node ){
+    public   void createNode( String node ){
         try {
             client.create().forPath(node);
         } catch (Exception e) {
@@ -43,7 +56,7 @@ public class ZKUtil {
         }
     }
 
-    public static void addNodeData(String node , Object data){
+    public   void addNodeData(String node , Object data){
         try {
             client.setData().forPath(node , JSONObject.toJSONString(data).getBytes());
         } catch (Exception e) {
@@ -51,7 +64,7 @@ public class ZKUtil {
         }
     }
 
-    public static void createNodeWithData(String node  , Object data){
+    public   void createNodeWithData(String node  , Object data){
         Assert.notNull(node);
         String createNode = createNodeAllNodePath(node);
         try {
@@ -61,7 +74,7 @@ public class ZKUtil {
         }
     }
 
-    public static String createNodeAllNodePath(String node ){
+    public   String createNodeAllNodePath(String node ){
         Assert.notNull(node);
         String nodes[] =  node.split("/");
         String createNode="";
@@ -82,7 +95,7 @@ public class ZKUtil {
     }
 
 
-    public static String  getNodeData(String node){
+    public   String  getNodeData(String node){
         try {
             return JSONObject.toJSONString(JSONObject.parse( client.getData().forPath(node) ) );
         } catch (Exception e) {
@@ -91,7 +104,7 @@ public class ZKUtil {
         }
     }
 
-    public  static  <T>  T  getNodeObjectData(String node , T t){
+    public     <T>  T  getNodeObjectData(String node , T t){
         try {
             return (T) JSONObject.parseObject(getNodeData(node) , t.getClass());
         } catch (Exception e) {
@@ -101,7 +114,7 @@ public class ZKUtil {
     }
 
 
-    public static boolean exitNode( String node){
+    public   boolean exitNode( String node){
         try {
             if(client.checkExists().forPath(node) == null){
                 return false;
@@ -116,6 +129,6 @@ public class ZKUtil {
 
 
     public static void main(String[] args) {
-        createNodeWithData("/order" ,"ss");
+//        createNodeWithData("/order" ,"ss");
     }
 }

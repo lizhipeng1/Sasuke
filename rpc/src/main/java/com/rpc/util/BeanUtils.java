@@ -1,11 +1,14 @@
 package com.rpc.util;
 
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -91,6 +94,26 @@ public class BeanUtils extends org.springframework.beans.BeanUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 反射 江jsonObject 转为 java对象
+     * @param jsonObject
+     * @param t
+     * @param <T>
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public static  <T> T parseJSONToObject(JSONObject jsonObject , T t) throws IllegalAccessException, InstantiationException {
+        Class clazz = t.getClass();
+        List<Field> fieldList = ReflectionUtils.getAccessibleFields( t );
+        if(CollectionUtils.isNotEmpty(fieldList)){
+            for(Field field : fieldList){
+                ReflectionUtils.invokeSetterMethod( t , field.getName() , jsonObject.get(field.getName()));
+            }
+        }
+        return t;
     }
 
 }

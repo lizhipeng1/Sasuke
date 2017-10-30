@@ -1,6 +1,7 @@
 package com.rpc.service;
 
 import com.rpc.annotation.config.ServiceProfileConfig;
+import com.rpc.invoker.HessianInvokerOperator;
 import com.rpc.invoker.ServiceInvokeScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,17 +24,30 @@ public class InvokeServiceOperation implements ApplicationContextAware {
 
     private ServiceProfileConfig serviceProfileConfig = null;
 
+    private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
+
+    private HessianInvokerOperator hessianInvokerOperator;
+
     @PostConstruct
     public void init(){
-        doInvokeScanner();
+        doInvokeReflectSpringBean();
     }
 
 
-    public void doInvokeScanner(){
+    public void doInvokeRegisterToSpring(){
         if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()) {
-            log.info(" 执行扫描 Invoke 服务发布 ");
-            this.serviceInvokeScanner = applicationContext.getBean(ServiceInvokeScanner.class);
+            log.info(" 执行扫描 Invoke 服务 注入spring 容器");
+            this.serviceInvokeScanner = beanFactoryPostProcessorService.getDefaultListableBeanFactory().getBean( ServiceInvokeScanner.class );
             this.serviceInvokeScanner.scannerAllocateBeanInfo();
+        }
+    }
+
+    public void doInvokeReflectSpringBean(){
+        if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()) {
+            log.info(" 执行扫描 Invoke 服务 注入spring bean");
+            this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+            this.serviceInvokeScanner = beanFactoryPostProcessorService.getDefaultListableBeanFactory().getBean( ServiceInvokeScanner.class );
+            hessianInvokerOperator.invokeService();
         }
     }
 
@@ -41,6 +55,8 @@ public class InvokeServiceOperation implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
+        this.serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
+        this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.hessianInvokerOperator = applicationContext.getBean(HessianInvokerOperator.class);
     }
 }

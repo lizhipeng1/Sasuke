@@ -17,13 +17,22 @@ public class RpcServiceJob {
     /**
      * 1 小时执行一次 服务数据持久化任务
      */
-    @Scheduled(cron = "0 0 0/1  * * ?")
-    public void doEhrJob() {
+    @Scheduled(cron = "0 0 0/2  * * ?")
+    public void doZKDataTODBJob() {
         log.info("====== 开始持久化服务数据到数据库 ======");
         boolean result = rpcInfoService.persistenceServiceInfo();
         log.info("============ 持久化结束 结果："+result+"============");
     }
 
+    /**
+     * 1 小时执行一次 服务数据持久化任务
+     */
+    @Scheduled(cron = "0 0 0/1  * * ?")
+    public void doDieJob() {
+        log.info("====== 开始持久化服务数据到数据库 ======");
+        boolean result = rpcInfoService.persistenceServiceInfo();
+        log.info("============ 持久化结束 结果："+result+"============");
+    }
 
 
 }

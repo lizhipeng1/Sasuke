@@ -11,7 +11,6 @@
     <module>rpc</module>
     <module>redis-key-notify</module>
     <module>rpc-monitor</module>
-      <module>track-point</module>
   </modules>
 
   <name>Sasuke</name>
