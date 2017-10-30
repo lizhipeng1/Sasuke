@@ -20,6 +20,13 @@ public interface ServiceInvokerOperator extends ThreadRunnable {
     void invokeService();
 
     /**
+     * 根据springbeanName 反射注入单个 spring bean 中
+     * 获取具体的服务 直接反射注入 spring bean
+     * 需要做判断验证（待续）
+     */
+    void invokeService( String springBeanName );
+
+    /**
      *  统一注册方法
      */
     void doInvoke(List<BeanDefinitionInfo> beanDefinitionInfoList);

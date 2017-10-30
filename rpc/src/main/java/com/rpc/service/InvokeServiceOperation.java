@@ -30,6 +30,7 @@ public class InvokeServiceOperation implements ApplicationContextAware {
 
     @PostConstruct
     public void init(){
+        System.out.println(" InvokeServiceOperation init");
         doInvokeReflectSpringBean();
     }
 

@@ -30,9 +30,6 @@ public class PublishServiceOperation implements ApplicationContextAware {
 
     @PostConstruct
     public void init(){
-
-        doInvokeService();
-
         if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()){
             log.info(" 执行扫描 Provider 服务发布 ");
             this.serviceProviderScanner = applicationContext.getBean(ServiceProviderScanner.class);
