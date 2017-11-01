@@ -43,3 +43,39 @@
     调用方：
     @ServiceInvokerAutowired
     private RemoteOrderService remoteOrderService;
+
+
+3. 大体功能完成后续优化
+
+
+
+
+
+
+   注意点：
+   1. getBeansWithAnnotation getBean 会导出bean 的实例化
+      在postProcessBeanFactory 中调用的话会导致后续的spring 自动注入出现问题
+
+   2. 当前的项目中各种类执行的方法是：
+        BeanFactoryPostProcessorService -> BeanPostProcessorService(before) -> init()
+        -> BeanPostProcessorService(after)
+      可以在 BeanFactoryPostProcessorService 中使用factory动态的创建 bean 到spring容器中
+      有关spring 的生命周期的请参考：
+      http://www.cnblogs.com/zrtqsk/p/3735273.html
+
+   3. 有关动态代理的 如果实现接口默认是jdk 否则是cglib
+      ReflectionUtils 新增 getTarget 相关联的方法用来获取 代理对象的真实对象
+      proxy-target-class="true" 强制使用cglib
+
+   4. defult-lazy-init 全局设置 是否懒加载  默认不是懒加载
+      spring 容器初始化完成以后bean实例化完成属性有值
+      代理对象的属性为null 但是在target的目标对象中已经存在属性值了
+      如果要修改代理对象的属性信息的话 要先获取target目标对象的object再去修改
+
+   5. 父子容器
+      ContextLoaderListener 父容器
+      DispatcherServlet  子容器
+      子容器可以访问父容器中的bean  反之不可以
+
+
+
