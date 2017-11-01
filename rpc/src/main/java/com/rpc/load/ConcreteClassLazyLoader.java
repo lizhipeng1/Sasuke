@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 /**
  * Created by hzlizhipeng on 2017/10/31.
  */
-@Component
 public class ConcreteClassLazyLoader implements LazyLoader , ApplicationContextAware{
 
     private ApplicationContext applicationContext;

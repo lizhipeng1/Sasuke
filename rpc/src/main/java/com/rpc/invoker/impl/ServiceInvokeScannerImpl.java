@@ -68,7 +68,8 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
                     try {
                         clazz = Class.forName(beanClassName);
                     } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                       log.info(e.toString());
+                       continue;
                     }
                     while (clazz != null && !"java.lang.Object".equals(clazz.getName())) {
                         doGetFieldAnnotation(clazz, beanName);

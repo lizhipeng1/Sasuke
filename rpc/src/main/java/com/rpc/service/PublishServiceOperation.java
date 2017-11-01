@@ -17,26 +17,14 @@ import javax.annotation.PostConstruct;
 /**
  * 服务 发布类
  */
-@Component
 public class PublishServiceOperation implements ApplicationContextAware {
     private static final Logger log= LoggerFactory.getLogger(PublishServiceOperation.class);
 
     private  ApplicationContext applicationContext;
-    private ServiceProviderScanner serviceProviderScanner;
 
     private ServiceProfileConfig serviceProfileConfig = null;
 
     private ThreadExecutor threadExecutor;
-
-//    private InvokeServiceOperation invokeServiceOperation;
-
-
-    private void doInvokeService() {
-        for(RpcTypeEnum rpcTypeEnum : RpcTypeEnum.values()){
-            ServiceInvokerOperator serviceInvokerOperator = (ServiceInvokerOperator) applicationContext.getBean(rpcTypeEnum.getInvokeClazz());
-            threadExecutor.execute( serviceInvokerOperator );
-        }
-    }
 
 
     @Override
@@ -44,6 +32,5 @@ public class PublishServiceOperation implements ApplicationContextAware {
         this.applicationContext = applicationContext;
         serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
         threadExecutor = applicationContext.getBean(ThreadExecutor.class);
-//        invokeServiceOperation = applicationContext.getBean(InvokeServiceOperation.class);
     }
 }

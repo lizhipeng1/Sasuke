@@ -1,11 +1,8 @@
 package com.rpc.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.rpc.annotation.config.ServiceProfileConfig;
 import com.rpc.provider.ServiceProviderScanner;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.SmartFactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -33,24 +30,27 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         this.configurableListableBeanFactory = configurableListableBeanFactory;
 
-//        将applicationContext转换为ConfigurableApplicationContext
         ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
 
-//         获取bean工厂并转换为DefaultListableBeanFactory
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
         doRegisterToSpring();
 
-        //hessian 服务到spring 中
-        doRegisterHessianToSpring();
+        doPublishAndRegisterHessianToSpring();
 
     }
 
-    private void doRegisterHessianToSpring() {
+    /**
+     * 执行发 rpc 服务 上传服务的 url 调用信息
+     */
+    private void doPublishAndRegisterHessianToSpring() {
         serviceProviderScanner = applicationContext.getBean(ServiceProviderScanner.class);
         serviceProviderScanner.scannerBeanInfo();
     }
 
+    /**
+     * 执行 注册 hessian 服务到 spring bean 的容器中
+     */
     private void doRegisterToSpring() {
         // 判断是否需要执行rpc 服务
         if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()) {

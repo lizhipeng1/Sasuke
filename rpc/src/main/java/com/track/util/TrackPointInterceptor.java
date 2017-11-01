@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 埋点记录类 aop 切面  记录日志
+ */
 public class TrackPointInterceptor implements MethodInterceptor {
 
     private static final Logger log= LoggerFactory.getLogger(TrackPointInterceptor.class);
@@ -60,7 +63,6 @@ public class TrackPointInterceptor implements MethodInterceptor {
                 );
             }
         });
-
         return result;
     }
 }

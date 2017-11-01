@@ -43,6 +43,9 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
         doAllocateBean();
     }
 
+    /**
+     * 扫描需要发布的 hessian 服务
+     */
     private void doScannerBeanInfo() {
         List<BeanDefinitionInfo> beanDefinitionInfos = Lists.newArrayList();
         String[] beanNames = configurableListableBeanFactory.getBeanNamesForAnnotation(ServiceProvider.class);
@@ -77,19 +80,9 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
         }
     }
 
-    private Map<String, Object> doGetRpcBeanMap() {
-        Map<String, Object> maps = new HashMap<String, Object>();
-        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-        for(String beanDname : beanDefinitionNames){
-            Object object = applicationContext.getBean(beanDname);
-            Object realObject = ReflectionUtils.getTarget(object);
-            if(realObject!= null &&  realObject instanceof RpcService){
-                maps.put(beanDname , object);
-            }
-        }
-        return null;
-    }
-
+    /**
+     * 根据服务类型具体分配 调用哪种 分配方法
+     */
     private void doAllocateBean() {
         if(CollectionUtils.isNotEmpty( this.beanDefinitionInfos )) {
             Map<RpcTypeEnum, List<BeanDefinitionInfo>> rpcTypeEnumListMap = Utils.list2MapList(beanDefinitionInfos, new Utils.KeyGenerator<BeanDefinitionInfo>() {
