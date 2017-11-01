@@ -31,3 +31,6 @@ rpc-monitor/target/
 rpc/src/test/
 rpc/target/
 /track-point/track-point.iml
+/rpc-monitor/src/main/resources/profile/pro/
+/rpc-monitor/src/main/resources/profile/dev/
+/rpc-monitor/src/main/resources/profile/qa/
