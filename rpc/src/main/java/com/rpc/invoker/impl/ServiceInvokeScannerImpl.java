@@ -57,12 +57,11 @@ public class ServiceInvokeScannerImpl implements ServiceInvokeScanner, Applicati
         springBeanProp = Maps.newHashMap();
         // 先获取 所有包含InvokeService 注解的属性
         String[] beanDefinitionNames = defaultListableBeanFactory.getBeanDefinitionNames();
-        System.out.println( JSONObject.toJSONString( beanDefinitionNames ));
         if(beanDefinitionNames != null && beanDefinitionNames.length>0) {
             for (int i= 0 ; i<beanDefinitionNames.length ; i++) {
                 String beanName = beanDefinitionNames[i];
-
                 BeanDefinition  beanDefinition =defaultListableBeanFactory.getBeanDefinition(beanName);
+//                beanDefinition.setLazyInit(false);
                 String beanClassName = beanDefinition.getBeanClassName();
                 if(!StringUtils.isEmpty(beanClassName)) {
                     Class clazz = null;

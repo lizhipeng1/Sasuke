@@ -38,22 +38,20 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
 
     private Map<String , List<BeanDefinitionInfo>> beanMap = null;
 
-
-
-    public void doInvoke( List<BeanDefinitionInfo> beanDefinitionInfoList ) {
+    public void doInvoke(List<BeanDefinitionInfo> beanDefinitionInfoList ) {
         this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
         defaultListableBeanFactory = beanFactoryPostProcessorService.getDefaultListableBeanFactory();
         if(!CollectionUtils.isEmpty(beanDefinitionInfoList)){
             beanDefinitionInfoListCopyOnWrite.addAll( beanDefinitionInfoList );
-        }
-        doInvokeZkServiceToSpring(beanDefinitionInfoListCopyOnWrite);
+            doInvokeZkServiceToSpring(beanDefinitionInfoListCopyOnWrite);
 
-        beanMap = Utils.list2MapList(beanDefinitionInfoListCopyOnWrite, new Utils.KeyGenerator<BeanDefinitionInfo>() {
-            @Override
-            public String generate(BeanDefinitionInfo beanDefinitionInfo) {
-                return beanDefinitionInfo.getSpringBeanName();
-            }
-        });
+            beanMap = Utils.list2MapList(beanDefinitionInfoListCopyOnWrite, new Utils.KeyGenerator<BeanDefinitionInfo>() {
+                @Override
+                public String generate(BeanDefinitionInfo beanDefinitionInfo) {
+                    return beanDefinitionInfo.getSpringBeanName();
+                }
+            });
+        }
     }
 
     /**
@@ -64,7 +62,7 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
     public void invokeService() {
         while ( beanDefinitionInfoListCopyOnWrite!=null && beanDefinitionInfoListCopyOnWrite.size()>0) {
             for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoListCopyOnWrite) {
-                invokeService(beanDefinitionInfo);
+                invokeService(null , beanDefinitionInfo);
                 beanDefinitionInfoListCopyOnWrite.remove( beanDefinitionInfo );
             }
         }
@@ -72,19 +70,19 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
     }
 
     @Override
-    public void invokeService(String springBeanName) {
+    public void invokeService(Object object ,String springBeanName) {
         if(org.apache.commons.lang3.StringUtils.isNotBlank(springBeanName) && beanMap!=null && beanMap.size()>0 && beanMap.containsKey(springBeanName)){
             List<BeanDefinitionInfo> beanDefinitionInfoList = beanMap.get(springBeanName);
             for(BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList){
-                invokeService( beanDefinitionInfo );
+                invokeService( ReflectionUtils.getTarget(object) , beanDefinitionInfo );
             }
         }
     }
 
 
-    private void  invokeService( BeanDefinitionInfo beanDefinitionInfo ){
+    private void  invokeService(Object objectParam , BeanDefinitionInfo beanDefinitionInfo ){
         if (beanDefinitionInfo.getServiceObject() != null) {
-            Object object = applicationContext.getBean(beanDefinitionInfo.getSpringBeanName());
+            Object object =  objectParam == null ? applicationContext.getBean(beanDefinitionInfo.getSpringBeanName()) : objectParam;
             if(ReflectionUtils.getFieldValue( object , beanDefinitionInfo.getFiledName()) == null ){
                 ReflectionUtils.setFieldValue( object , beanDefinitionInfo.getFiledName(), beanDefinitionInfo.getServiceObject());
                 log.info("添加 ：" + beanDefinitionInfo.getEnvironment() + " 下的服务 " + beanDefinitionInfo.getInterfaceClazz().getName() +
@@ -102,9 +100,6 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
      * @param beanDefinitionInfoListCopyOnWrite
      */
     private void doInvokeZkServiceToSpring(List<BeanDefinitionInfo> beanDefinitionInfoListCopyOnWrite) {
-
-        System.out.println( JSONObject.toJSONString(beanDefinitionInfoListCopyOnWrite));
-
         for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoListCopyOnWrite) {
 
             String nodeName = ServiceZKNodeNameUtil.getServiceZKNodeName(beanDefinitionInfo.getEnvironment(),
@@ -124,7 +119,7 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
                     continue;
                 }
                 BeanUtils.copyProperties(beanDefinitionInfoRpc, beanDefinitionInfo, true);
-                if ( ! applicationContext.containsBeanDefinition(beanDefinitionInfo.getBeanName()) ) {
+                if ( ! defaultListableBeanFactory.containsBeanDefinition(beanDefinitionInfo.getBeanName()) ) {
                     if( !defaultListableBeanFactory.containsSingleton(getBeanName(beanDefinitionInfo)) ){
                         try {
                             Object hessianObject = HessianUtil.factory.create(beanDefinitionInfo.getInterfaceClazz(), beanDefinitionInfo.getRequestUrl());
@@ -140,7 +135,7 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
 
                     }
                 } else {
-                    beanDefinitionInfo.setServiceObject(applicationContext.getBean( beanDefinitionInfo.getBeanName() ));
+                    beanDefinitionInfo.setServiceObject(defaultListableBeanFactory.getBean( beanDefinitionInfo.getBeanName() ));
                 }
                 // 直接注入到属性中 不可以直接反射注入 会出现提前实例化大致 导致属性无法自动注入的情况
 //                invokeService(beanDefinitionInfo);

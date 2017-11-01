@@ -28,13 +28,6 @@ public class InvokeServiceOperation implements ApplicationContextAware {
 
     private HessianInvokerOperator hessianInvokerOperator;
 
-    @PostConstruct
-    public void init(){
-        System.out.println(" InvokeServiceOperation init");
-        doInvokeReflectSpringBean();
-    }
-
-
     public void doInvokeRegisterToSpring(){
         if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()) {
             log.info(" 执行扫描 Invoke 服务 注入spring 容器");

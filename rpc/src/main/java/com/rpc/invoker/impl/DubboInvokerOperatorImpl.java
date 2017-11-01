@@ -19,7 +19,7 @@ public class DubboInvokerOperatorImpl implements DubboInvokerOperator {
     }
 
     @Override
-    public void invokeService(String springBeanName) {
+    public void invokeService(Object object ,String springBeanName) {
 
     }
 

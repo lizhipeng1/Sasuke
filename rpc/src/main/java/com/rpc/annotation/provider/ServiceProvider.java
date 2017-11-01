@@ -1,6 +1,7 @@
 package com.rpc.annotation.provider;
 
 import com.rpc.enums.RpcTypeEnum;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.lang.annotation.*;

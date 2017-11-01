@@ -2,6 +2,7 @@ package com.rpc.service;
 
 import com.rpc.invoker.HessianInvokerOperator;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -19,7 +20,8 @@ public class BeanPostProcessorService implements BeanPostProcessor , Application
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        hessianInvokerOperator.invokeService( beanName );
+        System.out.println( beanName );
+        hessianInvokerOperator.invokeService( bean, beanName );
         return bean;
     }
 

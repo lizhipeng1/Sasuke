@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -29,24 +31,25 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
     private ApplicationContext applicationContext;
 
     private BeanFactoryPostProcessorService beanFactoryPostProcessorService;
+    private ConfigurableListableBeanFactory configurableListableBeanFactory;
     private Config config;
     private  List<BeanDefinitionInfo> beanDefinitionInfos;
 
     public void scannerBeanInfo(){
         this.config = applicationContext.getBean(Config.class);
         this.beanFactoryPostProcessorService = applicationContext.getBean(BeanFactoryPostProcessorService.class);
+        this.configurableListableBeanFactory = beanFactoryPostProcessorService.configurableListableBeanFactory;
         doScannerBeanInfo();
         doAllocateBean();
     }
 
     private void doScannerBeanInfo() {
         List<BeanDefinitionInfo> beanDefinitionInfos = Lists.newArrayList();
-        Map<String , Object> beanMap  = applicationContext.getBeansWithAnnotation(ServiceProvider.class);
-        if(beanMap!=null && beanMap.size()>0){
-            List<String> beanNames = Arrays.asList( beanMap.keySet().toArray( new String[]{} ) );
-            for (String tem : beanNames) {
-                log.info("spring bean Name  "+ tem);
-                BeanDefinition beanDefinition = beanFactoryPostProcessorService.configurableListableBeanFactory.getBeanDefinition(tem);
+        String[] beanNames = configurableListableBeanFactory.getBeanNamesForAnnotation(ServiceProvider.class);
+        if(beanNames!=null && beanNames.length>0){
+            for (String tempBeanName : beanNames) {
+                log.info("spring bean Name  "+ tempBeanName);
+                BeanDefinition beanDefinition = configurableListableBeanFactory.getBeanDefinition(tempBeanName);
                 String className = beanDefinition.getBeanClassName();
                 Class clazz = null;
                 try {
@@ -65,7 +68,7 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
                     beanDefinitionInfo.setBeanInterfaceName( beanName );
                     beanDefinitionInfo.setRequestUrl(  config.getRpcServerPrefix()+url  );
                     beanDefinitionInfo.setEnvironment( Environment.environment);
-                    beanDefinitionInfo.setBeanName(tem);
+                    beanDefinitionInfo.setBeanName( tempBeanName );
                     beanDefinitionInfo.setRpcTypeEnum(serviceProvider.rpcTypeEnum());
                     beanDefinitionInfos.add( beanDefinitionInfo );
                 }

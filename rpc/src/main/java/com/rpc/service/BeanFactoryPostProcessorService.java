@@ -2,7 +2,9 @@ package com.rpc.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rpc.annotation.config.ServiceProfileConfig;
+import com.rpc.provider.ServiceProviderScanner;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -25,9 +27,12 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
 
     private ServiceProfileConfig serviceProfileConfig = null;
 
+    private ServiceProviderScanner serviceProviderScanner;
+
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         this.configurableListableBeanFactory = configurableListableBeanFactory;
+
 //        将applicationContext转换为ConfigurableApplicationContext
         ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
 
@@ -35,6 +40,15 @@ public class BeanFactoryPostProcessorService implements BeanFactoryPostProcessor
         defaultListableBeanFactory= (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
 
         doRegisterToSpring();
+
+        //hessian 服务到spring 中
+        doRegisterHessianToSpring();
+
+    }
+
+    private void doRegisterHessianToSpring() {
+        serviceProviderScanner = applicationContext.getBean(ServiceProviderScanner.class);
+        serviceProviderScanner.scannerBeanInfo();
     }
 
     private void doRegisterToSpring() {

@@ -930,6 +930,30 @@ public abstract class ReflectionUtils {
         }
         return new RuntimeException("Unexpected Checked Exception.", e);
     }
+
+    /**
+     * 获取 目标对象 true cglib代理  false jdk代理 null 不是代理对象
+     * @param proxy 代理对象
+     * @return
+     * @throws Exception
+     */
+    public static Boolean isCglibProxy(Object proxy) {
+
+        if(!AopUtils.isAopProxy(proxy)) {
+            return null;//不是代理对象
+        }
+        try {
+            if(AopUtils.isJdkDynamicProxy(proxy)) {
+                return false;
+            } else { //cglib
+                return true;
+            }
+        }catch (Exception e){
+            return  null;
+        }
+
+    }
+
     /**
      * 获取 目标对象
      * @param proxy 代理对象

@@ -14,7 +14,7 @@ import java.util.List;
 public class ZKUtil {
 
     private static final Logger logger= LoggerFactory.getLogger(ZKUtil.class);
-    private static final String connectString = "192.168.146.128:4180,192.168.146.128:4181,192.168.146.128:4182";
+    private static final String connectString = "192.168.130.144:4180,192.168.130.144:4181,192.168.130.144:4182";
     private static CuratorFramework client;
 
     public static CuratorFramework getClient() {

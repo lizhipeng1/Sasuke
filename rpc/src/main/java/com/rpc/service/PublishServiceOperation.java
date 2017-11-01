@@ -28,14 +28,8 @@ public class PublishServiceOperation implements ApplicationContextAware {
 
     private ThreadExecutor threadExecutor;
 
-    @PostConstruct
-    public void init(){
-        if(serviceProfileConfig!= null && serviceProfileConfig.isStartRpc()){
-            log.info(" 执行扫描 Provider 服务发布 ");
-            this.serviceProviderScanner = applicationContext.getBean(ServiceProviderScanner.class);
-            serviceProviderScanner.scannerBeanInfo();
-        }
-    }
+//    private InvokeServiceOperation invokeServiceOperation;
+
 
     private void doInvokeService() {
         for(RpcTypeEnum rpcTypeEnum : RpcTypeEnum.values()){
@@ -50,5 +44,6 @@ public class PublishServiceOperation implements ApplicationContextAware {
         this.applicationContext = applicationContext;
         serviceProfileConfig = applicationContext.getBean(ServiceProfileConfig.class);
         threadExecutor = applicationContext.getBean(ThreadExecutor.class);
+//        invokeServiceOperation = applicationContext.getBean(InvokeServiceOperation.class);
     }
 }

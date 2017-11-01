@@ -9,6 +9,7 @@ import com.rpc.util.ZKUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
@@ -46,11 +47,13 @@ public class HessianProviderOperatorImpl extends HessianProviderOperator impleme
 
     public void publishRemote() throws  Exception {
         for (BeanDefinitionInfo beanDefinitionInfo : beanDefinitionInfoList) {
+            System.out.println( beanDefinitionInfo.getRequestUrl() );
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(HessianServiceExporter.class);
             builder.addPropertyReference("service", beanDefinitionInfo.getBeanName());
             builder.addPropertyValue("serviceInterface", beanDefinitionInfo.getInterfaceClazz());
-            ((BeanDefinitionRegistry) beanFactoryPostProcessorService.configurableListableBeanFactory).registerBeanDefinition("/"+beanDefinitionInfo.getBeanInterfaceName(),
-                    builder.getBeanDefinition());
+            BeanDefinition beanDefinition = builder.getBeanDefinition();
+            beanFactoryPostProcessorService.registry.registerBeanDefinition(  "/"+beanDefinitionInfo.getBeanInterfaceName()
+                    , beanDefinition );
         }
     }
 
