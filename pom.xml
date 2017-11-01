@@ -18,7 +18,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>4.3.5.RELEASE</spring.version>
+    <!--<spring.version>4.3.5.RELEASE</spring.version>-->
+    <spring.version>3.2.2.RELEASE</spring.version>
   </properties>
 
   <dependencies>
@@ -119,7 +120,10 @@
       <scope>provided</scope>
     </dependency>
 
-
-
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>19.0</version>
+    </dependency>
   </dependencies>
 </project>

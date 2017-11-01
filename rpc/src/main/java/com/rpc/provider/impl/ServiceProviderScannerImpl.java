@@ -13,9 +13,11 @@ import com.rpc.parent.RpcService;
 import com.rpc.util.ReflectionUtils;
 import com.rpc.util.Utils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -23,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 @Service
@@ -48,32 +51,42 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
      */
     private void doScannerBeanInfo() {
         List<BeanDefinitionInfo> beanDefinitionInfos = Lists.newArrayList();
-        String[] beanNames = configurableListableBeanFactory.getBeanNamesForAnnotation(ServiceProvider.class);
-        if(beanNames!=null && beanNames.length>0){
-            for (String tempBeanName : beanNames) {
+        String[] beanNamesAll = configurableListableBeanFactory.getBeanDefinitionNames();
+//        String[] beanNames = configurableListableBeanFactory.getBeanNamesForAnnotation(ServiceProvider.class);    //spring 4.x.x
+        String[] beanNamesWithAnnotation =   getBeanNamesForAnnotation(ServiceProvider.class , beanNamesAll);
+        if(beanNamesWithAnnotation!=null && beanNamesWithAnnotation.length>0){
+            for (String tempBeanName : beanNamesWithAnnotation) {
                 log.info("spring bean Name  "+ tempBeanName);
                 BeanDefinition beanDefinition = configurableListableBeanFactory.getBeanDefinition(tempBeanName);
+                if(beanDefinition ==null){ continue; }
                 String className = beanDefinition.getBeanClassName();
-                Class clazz = null;
+                if(StringUtils.isBlank(className)){continue;}
+                Class clazz;
                 try {
                     clazz = Class.forName(className);
                 } catch (ClassNotFoundException e) {
                     log.info(e.toString());
+                    continue;
                 }
-                if(clazz != null){
-                    String parentName =clazz.getInterfaces()[0].getSimpleName();
-                    String beanName = parentName.substring(0,1).toLowerCase()+parentName.substring(1);
-                    String url = "/" +beanName;
-                    ServiceProvider serviceProvider = (ServiceProvider) clazz.getAnnotation(ServiceProvider.class);
-                    BeanDefinitionInfo beanDefinitionInfo =  new BeanDefinitionInfo();
-                    beanDefinitionInfo.setInterfaceClazz(clazz.getInterfaces()[0]);
-                    beanDefinitionInfo.setServiceClazz(clazz);
-                    beanDefinitionInfo.setBeanInterfaceName( beanName );
-                    beanDefinitionInfo.setRequestUrl(  config.getRpcServerPrefix()+url  );
-                    beanDefinitionInfo.setEnvironment( Environment.environment);
-                    beanDefinitionInfo.setBeanName( tempBeanName );
-                    beanDefinitionInfo.setRpcTypeEnum(serviceProvider.rpcTypeEnum());
-                    beanDefinitionInfos.add( beanDefinitionInfo );
+                if(clazz != null) {
+                    Class[] parentClass = clazz.getInterfaces();
+                    if (parentClass != null || parentClass.length > 0) {
+                        String parentName = parentClass[0].getSimpleName();
+                        String beanName = parentName.substring(0, 1).toLowerCase() + parentName.substring(1);
+                        String url = "/" + beanName;
+                        ServiceProvider serviceProvider = (ServiceProvider) clazz.getAnnotation(ServiceProvider.class);
+                        if (serviceProvider != null) {
+                            BeanDefinitionInfo beanDefinitionInfo = new BeanDefinitionInfo();
+                            beanDefinitionInfo.setInterfaceClazz(clazz.getInterfaces()[0]);
+                            beanDefinitionInfo.setServiceClazz(clazz);
+                            beanDefinitionInfo.setBeanInterfaceName(beanName);
+                            beanDefinitionInfo.setRequestUrl(config.getRpcServerPrefix() + url);
+                            beanDefinitionInfo.setEnvironment(Environment.environment);
+                            beanDefinitionInfo.setBeanName(tempBeanName);
+                            beanDefinitionInfo.setRpcTypeEnum(serviceProvider.rpcTypeEnum());
+                            beanDefinitionInfos.add(beanDefinitionInfo);
+                        }
+                    }
                 }
             }
             this.beanDefinitionInfos = beanDefinitionInfos;
@@ -98,6 +111,17 @@ public class ServiceProviderScannerImpl  implements ServiceProviderScanner , App
                 serviceProviderOperator.doProvider( beanDefinitionInfosTemp );
             }
         }
+    }
+
+    public String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType , String[] beanDefinitionNames) {
+        List<String> results = new ArrayList<String>();
+        for (String beanName : beanDefinitionNames) {
+            BeanDefinition beanDefinition = configurableListableBeanFactory.getBeanDefinition(beanName);
+            if (!beanDefinition.isAbstract() && configurableListableBeanFactory.findAnnotationOnBean(beanName, annotationType) != null) {
+                results.add(beanName);
+            }
+        }
+        return results.toArray(new String[results.size()]);
     }
 
 
