@@ -18,7 +18,7 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface ServiceInvokerResource {
-    String value() default "dev";
+    String value() default "";
 
     RpcTypeEnum rpcTypeEnum() default RpcTypeEnum.Hessian;
 

@@ -86,7 +86,7 @@ public class HessianInvokerOperatorImpl implements HessianInvokerOperator, Appli
             if(ReflectionUtils.getFieldValue( object , beanDefinitionInfo.getFiledName()) == null ){
                 ReflectionUtils.setFieldValue( object , beanDefinitionInfo.getFiledName(), beanDefinitionInfo.getServiceObject());
                 log.info("添加 ：" + beanDefinitionInfo.getEnvironment() + " 下的服务 " + beanDefinitionInfo.getInterfaceClazz().getName() +
-                        " 到 ：" + beanDefinitionInfo.getServiceObject().getClass().getSimpleName());
+                        " 到 ：" + beanDefinitionInfo.getSpringBeanName());
             }else {
                 log.info(  beanDefinitionInfo.getEnvironment() + " 环境下的服务 " + beanDefinitionInfo.getInterfaceClazz().getName() +
                         " 已存在于 " + beanDefinitionInfo.getServiceObject().getClass().getSimpleName());
