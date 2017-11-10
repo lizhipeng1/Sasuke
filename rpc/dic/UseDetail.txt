@@ -76,6 +76,9 @@
       ContextLoaderListener 父容器
       DispatcherServlet  子容器
       子容器可以访问父容器中的bean  反之不可以
+      
+  6. spring项目 需要将hessian服务发布放到mvc文件中
+     springboot 与 spring 容器的不同
 
 
 
