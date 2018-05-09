@@ -15,3 +15,20 @@
 
 /////////////////////////////////////////
 redis 多个数据源 如何配置
+
+
+
+///////////////////////////////////////
+redis 单机  集群封装配置
+
+
+#redis 单点配置 dev qa
+#redis.address=10.246.84.34:6379,10.246.84.35:6379,10.246.84.41:6379
+redis.address=127.0.0.1:6379
+redis.port=6379
+redis.password=ntes163
+redis.maxIdle=20
+redis.maxActive=50
+redis.maxWait=10000
+redis.testOnBorrow=true
+redis.timeout=100000
