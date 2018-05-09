@@ -20,8 +20,6 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/redis-concurrent/redis-concurrent.iml
-/Sasuke.iml
 /.idea/
 /rpc/rpc.iml
 /rpc-monitor/rpc-monitor.iml
@@ -34,3 +32,4 @@ rpc/target/
 /rpc-monitor/src/main/resources/profile/pro/
 /rpc-monitor/src/main/resources/profile/dev/
 /rpc-monitor/src/main/resources/profile/qa/
+/redis-key-notify/redis-key-notify.iml
