@@ -1,34 +1,11 @@
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
 /.idea/
-/rpc/rpc.iml
 redis-concurrent/target/
 redis-key-notify/target/
 rpc-monitor/target/
 rpc/src/test/
 rpc/target/
-/track-point/track-point.iml
 /rpc-monitor/src/main/resources/profile/pro/
 /rpc-monitor/src/main/resources/profile/dev/
 /rpc-monitor/src/main/resources/profile/qa/
 /*.iml
+/*/*.iml
