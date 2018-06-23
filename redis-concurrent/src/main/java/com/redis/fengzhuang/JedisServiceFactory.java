@@ -43,25 +43,23 @@ public class JedisServiceFactory implements FactoryBean<Object>, InitializingBea
     }
 
     private Object createProxy() {
-        return Proxy.newProxyInstance(jedisService.getClass().getClassLoader(), jedisService.getClass().getInterfaces(), new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                args[0] = businessKey((String) args[0]);
-                Object  result = null;
-                try {
-                    if(jedisPool !=null && threadLocal.get() == null) {
-                        threadLocal.set(jedisPool.getResource());
-                        jedisService.resetJedisCommonds(threadLocal.get());
-                    }
-                    result = method.invoke(jedisService, args);
-                }catch (Exception e){
-                    logger.info("Exception e : " +e.toString());
-                    result = method.invoke(jedisServiceCache, args);
-                }finally {
-                    refreshJedisResource();
+        return Proxy.newProxyInstance(jedisService.getClass().getClassLoader(), jedisService.getClass().getInterfaces(), (proxy, method, args) -> {
+            args[0] = businessKey((String) args[0]);
+            Object  result = null;
+            try {
+                if(jedisPool !=null && threadLocal.get() == null) {
+                    threadLocal.set(jedisPool.getResource());
+                    // TODO: 会有线程安全问题
+                    jedisService.resetJedisCommonds(threadLocal.get());
                 }
-                return result;
+                result = method.invoke(jedisService, args);
+            }catch (Exception e){
+                logger.info("Exception e : " +e.toString());
+                result = method.invoke(jedisServiceCache, args);
+            }finally {
+                refreshJedisResource();
             }
+            return result;
         });
     }
 
