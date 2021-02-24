@@ -17,7 +17,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JedisServiceFactory implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+public class JedisServiceFactory implements FactoryBean<JedisService>, InitializingBean, ApplicationContextAware {
     protected Logger logger = LoggerFactory.getLogger(JedisServiceFactory.class);
 
     private String environment;
@@ -38,29 +38,33 @@ public class JedisServiceFactory implements FactoryBean<Object>, InitializingBea
     private ThreadLocal<JedisCommands> threadLocal = new ThreadLocal();
 
     @Override
-    public Object getObject() {
-        return createProxy();
+    public JedisService getObject() {
+        return (JedisService) createProxy();
     }
 
     private Object createProxy() {
-        return Proxy.newProxyInstance(jedisService.getClass().getClassLoader(), jedisService.getClass().getInterfaces(), (proxy, method, args) -> {
-            args[0] = businessKey((String) args[0]);
-            Object  result = null;
-            try {
-                if(jedisPool !=null && threadLocal.get() == null) {
-                    threadLocal.set(jedisPool.getResource());
-                    // TODO: 会有线程安全问题
-                    jedisService.resetJedisCommonds(threadLocal.get());
-                }
-                result = method.invoke(jedisService, args);
-            }catch (Exception e){
-                logger.info("Exception e : " +e.toString());
-                result = method.invoke(jedisServiceCache, args);
-            }finally {
-                refreshJedisResource();
-            }
-            return result;
-        });
+        return Proxy.newProxyInstance(jedisService.getClass().getClassLoader(), jedisService.getClass().getInterfaces(),
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        args[0] = businessKey((String) args[0]);
+                        Object  result = null;
+                        try {
+                            if(jedisPool !=null && threadLocal.get() == null) {
+                                threadLocal.set(jedisPool.getResource());
+                                // TODO: 会有线程安全问题
+                                jedisService.resetJedisCommonds(threadLocal.get());
+                            }
+                            result = method.invoke(jedisService, args);
+                        }catch (Exception e){
+                            logger.info("Exception e : " +e.toString());
+                            result = method.invoke(jedisServiceCache, args);
+                        }finally {
+                            refreshJedisResource();
+                        }
+                        return result;
+                    }
+                });
     }
 
     private void refreshJedisResource() {
@@ -72,7 +76,7 @@ public class JedisServiceFactory implements FactoryBean<Object>, InitializingBea
     }
 
     @Override
-    public Class<?> getObjectType() {
+    public Class<JedisService> getObjectType() {
         return JedisService.class;
     }
 
@@ -100,19 +104,19 @@ public class JedisServiceFactory implements FactoryBean<Object>, InitializingBea
             throw new RuntimeException(" not found poolConfig in spring !!");
         }
         if( environment.startsWith("dev") || environment.startsWith("qa")){    // dev qa
-            getJedisPool();
+            refreshJedisPool();
             threadLocal.set(jedisPool.getResource());
             jedisCommands = threadLocal.get();
         }else if(environment.startsWith("pro")){ // pro
             Set<HostAndPort> haps = this.parseClusterHostAndPort();
-            jedisCommands = new JedisCluster(haps, redisTimeout, redisTimeout , redisMaxRedirections , redisPassword , genericObjectPoolConfig);
+            jedisCommands = new JedisCluster(haps, redisTimeout, redisTimeout, genericObjectPoolConfig);
         }else {
             throw new RuntimeException("can not  get service environment info !!!!");
         }
         jedisService =  new JedisServiceImpl(jedisCommands , keyPrefix);
     }
 
-    private JedisPool getJedisPool() {
+    private JedisPool refreshJedisPool() {
         if(jedisPool!=null) {
             jedisPool.destroy();
         }
